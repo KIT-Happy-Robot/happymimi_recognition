@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>happymimi_recognition</name>
+  <version>0.0.0</version>
+  <description>The happymimi_recognition package</description>
+  <maintainer email="tatsuhito@todo.todo">tatsuhito</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
