@@ -1,0 +1,4 @@
+string target_name
+---
+int64 object_num
+string[] object_list

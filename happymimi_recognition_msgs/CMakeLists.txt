@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   geometry_msgs
+  actionlib_msgs
   message_generation
 )
 
@@ -66,10 +67,8 @@ add_service_files(
 
 ## Generate actions in the 'action' folder
 add_action_files(
-  DIRECTORY
-  action
   FILES
-  .action
+  Recognizer.action
 )
 
 ## Generate added messages and services with any dependencies listed here
@@ -123,8 +122,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
+  include
+  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
