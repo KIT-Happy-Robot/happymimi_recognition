@@ -13,7 +13,7 @@ from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
 from happymimi_recognition_msgs.srv import RecognizeFind, RecognizeCount, RecognizeLocalize, PositionEstimator
 # -- Action msg --
-from mimi_manipulation_pkg.msg import *
+from happymimi_recognition_msgs.msg import *
 
 class MimiControl(object):
     def __init__(self):
