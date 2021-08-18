@@ -87,7 +87,7 @@ class RecognizeTools(object):
     def boundingBoxCB(self,bb):
         self.update_time = time.time()
         self.update_flg = True
-        self.bbox = bb.boundingBoxes
+        self.bbox = bb.bounding_boxes
 
     def createBboxList(self,bb):
         bbox_list = []
@@ -193,7 +193,7 @@ class RecognizeTools(object):
 class RecognizeAction(object):
     def __init__(self):
         self.act = actionlib.SimpleActionServer('/manipulation/localize',
-                                                ObjectRecognizerAction,
+                                                RecognitionProcessingAction,
                                                 execute_cb = self.actionMain,
                                                 auto_start = False)
         self.act.register_preempt_callback(self.actionPreempt)
@@ -212,8 +212,8 @@ class RecognizeAction(object):
     def actionMain(self, goal):
         target_name = goal.recognize_goal
         rospy.loginfo('start action >> recognize %s'%(target_name))
-        action_feedback = ObjectRecognizerFeedback()
-        action_result = ObjectRecognizerResult()
+        action_feedback = RecognitionProcessingFeedback()
+        action_result = RecognitionProcessingResult()
         mimi_control = MimiControl()
         move_count = 0
         while not rospy.is_shutdown():
