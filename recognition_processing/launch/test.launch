@@ -1,0 +1,10 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <!-- <rosparam file="$(find mimi_manipulation_pkg)/param/mimi_specification.yaml" command="load" ns="mimi_specification"/> -->
+  <rosparam file="$(find dynamixel_controller)/param/object_dict.yaml" command="load" ns="object_dict"/>
+  <!-- <rosparam file="$(find mimi_manipulation_pkg)/param/location_dict.yaml" command="load" ns="location_dict"/> -->
+  <!-- <node pkg="mimi_manipulation_pkg" name="object_recognizer" type="object_recognizer.py" /> -->
+  <!-- <node pkg="mimi_manipulation_pkg" name="three_dimensional_position_estimator" type="three_dimensional_position_estimator" /> -->
+  <!-- <node pkg="mimi_manipulation_pkg" name="object_grasper" type="object_grasper.py" /> -->
+  <!-- <node pkg="mimi_manipulation_pkg" name="manipulation_master" type="manipulation_master.py" /> -->
+</launch>
