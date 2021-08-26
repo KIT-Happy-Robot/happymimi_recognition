@@ -15,7 +15,7 @@ from recognition_tools import RecognitionTools
 
 class MimiControl(object):
     def __init__(self):
-        
+
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=1)
 
         self.twist_value = Twist()

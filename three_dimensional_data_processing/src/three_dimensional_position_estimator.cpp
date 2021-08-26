@@ -59,7 +59,7 @@ bool ThreeDimensionalPositionEstimator::convertImage(const sensor_msgs::ImageCon
 	// ros image msg -> cv_bridge -> cv::Mat
 	cv_ptr = cv_bridge::toCvCopy(input_image, sensor_msgs::image_encodings::TYPE_16UC1);
 	output_image = cv_ptr->image;
-	
+
 	/* 画像出力
 	cv::imshow("Image_window", output_image);
 	cv::waitKey(0);
@@ -91,7 +91,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   ROS_INFO("%f", distance);
 
   float theta_y, theta_z, centroid_x, centroid_y, centroid_z;
-	
+
   theta_y = ((req.center_y-320)*54.2/640)/180*M_PI;
   theta_z = (-1*(req.center_x-240)*47.0/480)/180*M_PI;
 
@@ -100,7 +100,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   centroid_y = -1 * distance * tan(theta_y);
   centroid_z = distance * tan(theta_z);
   ROS_INFO("%f, %f", centroid_x, centroid_z);
-  
+
   //角度：head_angleに合わせて調整
   centroid_x = (centroid_x * cos(M_PI*head_angle/180)) + (centroid_z * sin(M_PI*head_angle/180));
   centroid_z = (centroid_z * cos(M_PI*head_angle/180)) - (distance * sin(M_PI*head_angle/180));
@@ -114,20 +114,20 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   float theta = 90-(38.46+head_angle);
   float head_height = 13.67*sin(theta*M_PI/180);
   float realsense_height = neck_height + (head_height/1000);
-  
+
   res.centroid_point.x = centroid_x / 1000;
   res.centroid_point.y = centroid_y / 1000;
   res.centroid_point.z = centroid_z / 1000 + realsense_height;
   ROS_INFO("x:%f, y:%f, z:%f", res.centroid_point.x, res.centroid_point.y, res.centroid_point.z);
-  
-  return true;  
+
+  return true;
 }
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "three_dimensional_position_estimator");
 
   ThreeDimensionalPositionEstimator three_dimensional_position_estimator;
-  
+
   ROS_INFO("Ready");
   ros::spin();
   return 0;

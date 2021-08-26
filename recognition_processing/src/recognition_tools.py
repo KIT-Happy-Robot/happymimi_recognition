@@ -12,7 +12,6 @@ from happymimi_recognition_msgs.srv import RecognizeFind, RecognizeCount, Recogn
 
 class MimiControl(object):
     def __init__(self):
-        
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=1)
 
         self.twist_value = Twist()
@@ -53,19 +52,19 @@ class MimiControl(object):
         self.twist_value.angular.z = 0
         self.cmd_vel_pub.publish(self.twist_value)
 
-        
+
 class CallDetector(object):
     def __init__(self):
         self.detect_depth = rospy.ServiceProxy('/detect/depth', PositionEstimator)
 
         self.object_centroid = Point()
-        
+
     def detectorService(self, center_x, center_y):
         rospy.wait_for_service('/detect/depth')
         res = self.detect_depth(center_x, center_y)
         self.object_centroid = res.centroid_point
         rospy.loginfo(self.object_centroid)
-        
+
 
 class RecognitionTools(object):
     def __init__(self):
@@ -102,16 +101,16 @@ class RecognitionTools(object):
     def findObject(self, object_name='None'):
         rospy.loginfo('module type : Find')
         mimi_control = MimiControl()
-        
+
         if type(object_name) != str:
             object_name = object_name.target_name
-            
+
         find_flg, _ = self.countObject(object_name)
         loop_count = 0
-        
+
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
-            
+
             rotation_angle = 45 - (((loop_count)%4)/2) * 90
             mimi_control.angleRotation(rotation_angle)
             rospy.sleep(3.0)
@@ -124,18 +123,18 @@ class RecognitionTools(object):
             else:
                 find_flg = object_name in bbox_list
         return find_flg
-            
+
     def countObject(self, object_name='None', bb=None):
         rospy.loginfo('module type : Count')
-        
+
         if bb is None:
             bb = self.bbox
         if type(object_name) != str:
             object_name = object_name.target_name
-            
+
         object_list = []
         bbox_list = self.createBboxList(bb)
-        
+
         if object_name == 'any':
             any_dict = {}
             for i in range(len(bbox_list)):
@@ -153,12 +152,12 @@ class RecognitionTools(object):
     def localizeObject(self, object_name='None', bb=None):
         rospy.loginfo('module type : Localize')
         Detector = CallDetector()
-        
+
         if bb is None:
             bb = self.bbox
         if type(object_name) != str:
             object_name = object_name.target_name
-            
+
         object_centroid = Point()
         object_centroid.x = numpy.nan
         object_centroid.y = numpy.nan
@@ -175,7 +174,7 @@ class RecognitionTools(object):
 
         if not exist_flg:
             return object_centroid
-        
+
         index_num = bbox_list.index(object_name)
         center_x = int((bb[index_num].ymin + bb[index_num].ymax)/2)
         center_y = int((bb[index_num].xmin + bb[index_num].xmax)/2)
