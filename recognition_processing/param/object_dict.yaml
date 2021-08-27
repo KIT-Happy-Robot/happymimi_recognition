@@ -1,0 +1,8 @@
+{'red cup':['cup'],
+ 'blue cup':['cup'],
+ 'red snack':['cup'],
+ 'green snack':['cup'],
+ 'coke':['bottle'],
+ 'water':['bottle'],
+ 'any':['cup', 'bottle']
+}
