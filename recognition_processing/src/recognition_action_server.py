@@ -69,7 +69,6 @@ class RecognitionActionServer(object):
         self.act.start()
 
         self.recognition_tools = RecognitionTools()
-        self.recognition_tools.initializeBBox()
 
     def actionPreempt(self):
         rospy.loginfo('preempt callback')

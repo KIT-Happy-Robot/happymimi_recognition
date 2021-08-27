@@ -78,25 +78,25 @@ class RecognitionTools(object):
         self.update_time = 0 # darknetからpublishされた時刻を記録
         self.update_flg = False # darknetからpublishされたかどうかの確認
 
+        rospy.Timer(rospy.Duration(0.5), self.initializeBbox)
+
     def boundingBoxCB(self,bb):
         self.update_time = time.time()
         self.update_flg = True
         self.bbox = bb.bounding_boxes
+
+    def initializeBbox(self, event):
+        # darknetが何も認識していない時にself.bboxを初期化する
+        if time.time() - self.update_time > 1.0 and self.update_flg:
+            self.bbox = []
+            self.update_flg = False
+            rospy.loginfo('initialize')
 
     def createBboxList(self,bb):
         bbox_list = []
         for i in range(len(bb)):
             bbox_list.append(bb[i].Class)
         return bbox_list
-
-    def initializeBBox(self):
-        rate = rospy.Rate(3.0)
-        while not rospy.is_shutdown():
-            if time.time() - self.update_time > 1.5 and self.update_flg:
-                self.bbox = []
-                self.update_flg = False
-                rospy.loginfo('initialize')
-            rate.sleep()
 
     def findObject(self, object_name='None'):
         rospy.loginfo('module type : Find')
