@@ -116,8 +116,8 @@ class RecognitionTools(object):
         any_dict = {}
         bbox_list = self.createBboxList(bb)
 
+        '''
         if object_name == 'any':
-            '''
             for i in range(len(bbox_list)):
                 if bbox_list[i] in self.object_dict['any']:
                     any_dict[bbox_list[i]] = int((bb[i].xmin + bb[i].xmax)/2)
@@ -131,10 +131,11 @@ class RecognitionTools(object):
             sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
             for i in range(len(sorted_any_dict)):
                 object_list.append(sorted_any_dict[i][0])
-            '''
             object_list = bbox_list
         else:
             object_list = bbox_list
+        '''
+        object_list = bbox_list
         return object_list
 
 
