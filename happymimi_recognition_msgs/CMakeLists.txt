@@ -59,9 +59,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
-  RecognizeFind.srv
-  RecognizeCount.srv
-  RecognizeLocalize.srv
+  RecognitionList.srv
+  RecognitionFind.srv
+  RecognitionCount.srv
+  RecognitionLocalize.srv
   PositionEstimator.srv
 )
 
