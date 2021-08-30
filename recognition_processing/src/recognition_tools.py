@@ -5,10 +5,11 @@ import time
 import numpy
 import rospy
 import rosparam
+import rosgraph
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
-from happymimi_recognition_msgs.srv import RecognizeFind, RecognizeCount, RecognizeLocalize, PositionEstimator
+from happymimi_recognition_msgs.srv import RecognitionList, RecognitionFind, RecognitionCount, RecognitionLocalize, PositionEstimator
 
 class MimiControl(object):
     def __init__(self):
@@ -69,11 +70,16 @@ class CallDetector(object):
 class RecognitionTools(object):
     def __init__(self):
         rospy.Subscriber('/darknet_ros/bounding_boxes',BoundingBoxes,self.boundingBoxCB)
-        rospy.Service('/recognition/find',RecognizeFind,self.findObject)
-        rospy.Service('/recognition/count',RecognizeCount,self.countObject)
-        rospy.Service('/recognition/localize',RecognizeLocalize,self.localizeObject)
+        rospy.Service('/recognition/list',RecognitionList,self.listObject)
+        rospy.Service('/recognition/find',RecognitionFind,self.findObject)
+        rospy.Service('/recognition/count',RecognitionCount,self.countObject)
+        rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
 
-        self.object_dict = rosparam.get_param('/object_dict')
+        try:
+            self.object_dict = rosparam.get_param('/object_dict')
+        except rosgraph.masterapi.MasterError:
+            self.object_dict = {'any':['cup', 'bottle']}
+
         self.bbox = []
         self.update_time = 0 # darknetからpublishされた時刻を記録
         self.update_flg = False # darknetからpublishされたかどうかの確認
@@ -98,14 +104,48 @@ class RecognitionTools(object):
             bbox_list.append(bb[i].Class)
         return bbox_list
 
-    def findObject(self, object_name='None'):
+    def listObject(self, object_name='', bb=None):
+        rospy.loginfo('module type : List')
+
+        if bb is None:
+            bb = self.bbox
+        if type(object_name) != str:
+            object_name = object_name.target_name
+
+        object_list = []
+        any_dict = {}
+        bbox_list = self.createBboxList(bb)
+
+        if object_name == 'any':
+            '''
+            for i in range(len(bbox_list)):
+                if bbox_list[i] in self.object_dict['any']:
+                    any_dict[bbox_list[i]] = int((bb[i].xmin + bb[i].xmax)/2)
+            sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
+            for i in range(len(sorted_any_dict)):
+                object_list.append(sorted_any_dict[i][0])
+        elif object_name != '':
+            for i in range(len(bbox_list)):
+                if bbox_list[i] == object_name:
+                    any_dict[bbox_list[i]] = int((bb[i].xmin + bb[i].xmax)/2)
+            sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
+            for i in range(len(sorted_any_dict)):
+                object_list.append(sorted_any_dict[i][0])
+            '''
+            object_list = bbox_list
+        else:
+            object_list = bbox_list
+        return object_list
+
+
+    def findObject(self, object_name=''):
         rospy.loginfo('module type : Find')
         mimi_control = MimiControl()
 
         if type(object_name) != str:
             object_name = object_name.target_name
 
-        find_flg, _ = self.countObject(object_name)
+        find_flg = self.countObject(object_name)
         loop_count = 0
 
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
@@ -116,7 +156,7 @@ class RecognitionTools(object):
             rospy.sleep(3.0)
 
             bbox_list = self.createBboxList(self.bbox)
-            if object_name == 'None':
+            if object_name == '':
                 find_flg = bool(len(bbox_list))
             elif object_name == 'any':
                 find_flg = bool(len(list(set(self.object_dict['any'])&set(bbox_list))))
@@ -124,7 +164,7 @@ class RecognitionTools(object):
                 find_flg = object_name in bbox_list
         return find_flg
 
-    def countObject(self, object_name='None', bb=None):
+    def countObject(self, object_name='', bb=None):
         rospy.loginfo('module type : Count')
 
         if bb is None:
@@ -132,24 +172,18 @@ class RecognitionTools(object):
         if type(object_name) != str:
             object_name = object_name.target_name
 
-        object_list = []
+        object_count = 0
         bbox_list = self.createBboxList(bb)
 
         if object_name == 'any':
-            any_dict = {}
             for i in range(len(bbox_list)):
                 if bbox_list[i] in self.object_dict['any']:
-                    any_dict[bbox_list[i]] = bb[i].xmin
-            sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
-            for i in range(len(sorted_any_dict)):
-                object_list.append(sorted_any_dict[i][0])
-            object_count = len(sorted_any_dict)
+                    object_count += 1
         else:
             object_count = bbox_list.count(object_name)
-            object_list = bbox_list
-        return object_count, object_list
+        return object_count
 
-    def localizeObject(self, object_name='None', bb=None):
+    def localizeObject(self, object_name='', bb=None):
         rospy.loginfo('module type : Localize')
         Detector = CallDetector()
 
@@ -164,11 +198,13 @@ class RecognitionTools(object):
         object_centroid.z = numpy.nan
 
         bbox_list = self.createBboxList(bb)
-        object_count, object_list = self.countObject(object_name)
+        object_count = self.countObject(object_name)
 
         if object_name == 'any':
-            exist_flg = bool(len(object_list))
-            if exist_flg: object_name = object_list[0]
+            exist_flg = bool(object_count)
+            if exist_flg:
+                object_list = self.listObject(object_name)
+                object_name = object_list[0]
         else:
             exist_flg = bool(object_count)
 
