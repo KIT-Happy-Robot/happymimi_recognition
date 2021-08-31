@@ -84,7 +84,7 @@ class RecognitionActionServer(object):
         move_count = 0
         while not rospy.is_shutdown():
             bb = self.recognition_tools.bbox
-            object_count, _ = self.recognition_tools.countObject(target_name, bb)
+            object_count = self.recognition_tools.countObject(target_name, bb)
             exist_flg = bool(object_count)
             if exist_flg:
                 object_centroid = self.recognition_tools.localizeObject(target_name, bb)
