@@ -184,7 +184,8 @@ class RecognitionTools(object):
             object_count = bbox_list.count(object_name)
         return object_count
 
-    def localizeObject(self, object_name='', bb=None):
+    def localizeObject(self, object_name='', sort_request=[], bb=None):
+        sort
         rospy.loginfo('module type : Localize')
         Detector = CallDetector()
 
