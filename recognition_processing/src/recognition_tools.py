@@ -104,40 +104,43 @@ class RecognitionTools(object):
             bbox_list.append(bb[i].Class)
         return bbox_list
 
-    def listObject(self, object_name='', bb=None):
+    def listObject(self, request, bb=None, internal_call=False):
         rospy.loginfo('module type : List')
 
         if bb is None:
             bb = self.bbox
-        if type(object_name) != str:
-            object_name = object_name.target_name
+
+        object_name = request.target_name
+        sort_option = request.sort_option
 
         object_list = []
-        any_dict = {}
+        coordinate_list = []
         bbox_list = self.createBboxList(bb)
 
-        '''
-        if object_name == 'any':
-            for i in range(len(bbox_list)):
-                if bbox_list[i] in self.object_dict['any']:
-                    any_dict[bbox_list[i]] = int((bb[i].xmin + bb[i].xmax)/2)
-            sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
-            for i in range(len(sorted_any_dict)):
-                object_list.append(sorted_any_dict[i][0])
-        elif object_name != '':
-            for i in range(len(bbox_list)):
-                if bbox_list[i] == object_name:
-                    any_dict[bbox_list[i]] = int((bb[i].xmin + bb[i].xmax)/2)
-            sorted_any_dict = sorted(any_dict.items(), key=lambda x:x[1])
-            for i in range(len(sorted_any_dict)):
-                object_list.append(sorted_any_dict[i][0])
-            object_list = bbox_list
-        else:
-            object_list = bbox_list
-        '''
-        object_list = bbox_list
-        return object_list
+        # 座標を格納したlistを作成
+        for i in range(len(bbox_list)):
+            if object_name == 'any':
+                if not(bbox_list[i] in self.object_dict['any']): continue
+            elif object_name != '':
+                if not(bbox_list[i] == object_name): continue
+            coordinate_list.append([bbox_list[i], [int((bb[i].ymin + bb[i].ymax)/2), int((bb[i].xmin + bb[i].xmax)/2)]])
 
+        # ソート
+        if sort_option == 'left':
+            coordinate_list.sort(key=lambda x: x[1][1])
+        elif sort_option == 'center':
+            pass
+        elif sort_option == 'right':
+            coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
+
+        # 内部呼び出しかserverの呼び出しか
+        if internal_call:
+            object_list = coordinate_list
+        else:
+            for i in coordinate_list:
+                object_list.append(i[0])
+
+        return object_list
 
     def findObject(self, object_name=''):
         rospy.loginfo('module type : Find')
