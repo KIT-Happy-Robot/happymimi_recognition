@@ -9,7 +9,7 @@ import rosgraph
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
-from happymimi_recognition_msgs.srv import RecognitionList, RecognitionFind, RecognitionCount, RecognitionLocalize, PositionEstimator
+from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListResponse, RecognitionFind, RecognitionCount, RecognitionLocalize, PositionEstimator
 
 class MimiControl(object):
     def __init__(self):
@@ -113,7 +113,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         sort_option = request.sort_option
 
-        object_list = []
+        object_list = RecognitionListResponse()
         coordinate_list = []
         bbox_list = self.createBboxList(bb)
 
@@ -135,10 +135,10 @@ class RecognitionTools(object):
 
         # 内部呼び出しかserverの呼び出しか
         if internal_call:
-            object_list = coordinate_list
+            object_list.object_list = coordinate_list
         else:
             for i in coordinate_list:
-                object_list.append(i[0])
+                object_list.object_list.append(i[0])
 
         return object_list
 
