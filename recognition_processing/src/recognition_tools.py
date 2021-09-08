@@ -75,6 +75,8 @@ class RecognitionTools(object):
         rospy.Service('/recognition/count',RecognitionCount,self.countObject)
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
 
+        self.image_height = rosparam.get_param('/camera/realsense2_camera/color_height')
+        self.image_width = rosparam.get_param('/camera/realsense2_camera/color_width')
         try:
             self.object_dict = rosparam.get_param('/object_dict')
         except rosgraph.masterapi.MasterError:
@@ -113,7 +115,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         sort_option = request.sort_option
 
-        object_list = RecognitionListResponse()
+        response_list = RecognitionListResponse()
         coordinate_list = []
         bbox_list = self.createBboxList(bb)
 
@@ -129,18 +131,22 @@ class RecognitionTools(object):
         if sort_option == 'left':
             coordinate_list.sort(key=lambda x: x[1][1])
         elif sort_option == 'center':
-            pass
+            for i in coordinate_list:
+                i[1][1] -= (self.image_width)/2
+            coordinate_list.sort(key=lambda x: abs(x[1][1]))
+            for i in coodinate_list:
+                i[1][1] += (self.image_width)/2
         elif sort_option == 'right':
             coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
 
         # 内部呼び出しかserverの呼び出しか
         if internal_call:
-            object_list.object_list = coordinate_list
+            response_list.object_list = coordinate_list
         else:
             for i in coordinate_list:
-                object_list.object_list.append(i[0])
+                response_list.object_list.append(i[0])
 
-        return object_list
+        return response_list
 
     def findObject(self, object_name=''):
         rospy.loginfo('module type : Find')
