@@ -9,7 +9,7 @@ import rosgraph
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
-from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListResponse, RecognitionFind, RecognitionCount, RecognitionLocalize, PositionEstimator
+from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListResponse, RecognitionCount, RecognitionFind, RecognitionLocalize, PositionEstimator
 
 class MimiControl(object):
     def __init__(self):
@@ -75,8 +75,8 @@ class RecognitionTools(object):
         rospy.Service('/recognition/count',RecognitionCount,self.countObject)
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
 
-        self.image_height = rosparam.get_param('/camera/realsense2_camera/color_height')
-        self.image_width = rosparam.get_param('/camera/realsense2_camera/color_width')
+        self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
+        self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
         try:
             self.object_dict = rosparam.get_param('/object_dict')
         except rosgraph.masterapi.MasterError:
@@ -134,7 +134,7 @@ class RecognitionTools(object):
             for i in coordinate_list:
                 i[1][1] -= (self.image_width)/2
             coordinate_list.sort(key=lambda x: abs(x[1][1]))
-            for i in coodinate_list:
+            for i in coordinate_list:
                 i[1][1] += (self.image_width)/2
         elif sort_option == 'right':
             coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
@@ -147,6 +147,25 @@ class RecognitionTools(object):
                 response_list.object_list.append(i[0])
 
         return response_list
+
+    def countObject(self, object_name='', bb=None):
+        rospy.loginfo('module type : Count')
+
+        if bb is None:
+            bb = self.bbox
+        if type(object_name) != str:
+            object_name = object_name.target_name
+
+        object_count = 0
+        bbox_list = self.createBboxList(bb)
+
+        if object_name == 'any':
+            for i in range(len(bbox_list)):
+                if bbox_list[i] in self.object_dict['any']:
+                    object_count += 1
+        else:
+            object_count = bbox_list.count(object_name)
+        return object_count
 
     def findObject(self, object_name=''):
         rospy.loginfo('module type : Find')
@@ -173,25 +192,6 @@ class RecognitionTools(object):
             else:
                 find_flg = object_name in bbox_list
         return find_flg
-
-    def countObject(self, object_name='', bb=None):
-        rospy.loginfo('module type : Count')
-
-        if bb is None:
-            bb = self.bbox
-        if type(object_name) != str:
-            object_name = object_name.target_name
-
-        object_count = 0
-        bbox_list = self.createBboxList(bb)
-
-        if object_name == 'any':
-            for i in range(len(bbox_list)):
-                if bbox_list[i] in self.object_dict['any']:
-                    object_count += 1
-        else:
-            object_count = bbox_list.count(object_name)
-        return object_count
 
     def localizeObject(self, object_name='', sort_request=[], bb=None):
         sort
