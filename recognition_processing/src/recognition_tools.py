@@ -64,7 +64,6 @@ class CallDetector(object):
         rospy.wait_for_service('/detect/depth')
         res = self.detect_depth(center_x, center_y)
         self.object_centroid = res.centroid_point
-        rospy.loginfo(self.object_centroid)
 
 
 class RecognitionTools(object):
@@ -217,8 +216,11 @@ class RecognitionTools(object):
         list_request = RecognitionListRequest()
         list_request.target_name = object_name
         list_request.sort_option = sort_option.data
-        object_list = self.listObject(list_request).object_list
-        center_x, center_y = object_list[sort_option.num][1]
+        object_list = self.listObject(request=list_request, bb=self.bbox, internal_call=True).object_list
+        try:
+            center_x, center_y = object_list[sort_option.num][1]
+        except IndexError:
+            return response_centroid
 
         # 三次元位置の推定
         rospy.sleep(0.5)
