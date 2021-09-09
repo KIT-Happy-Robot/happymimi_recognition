@@ -9,7 +9,7 @@ import rosgraph
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
-from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListResponse, RecognitionCount, RecognitionFind, RecognitionLocalize, PositionEstimator
+from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListRequest, RecognitionListResponse, RecognitionCount, RecognitionCountRequest, RecognitionFind, RecognitionLocalize, RecognitionLocalizeResponse, PositionEstimator
 
 class MimiControl(object):
     def __init__(self):
@@ -109,14 +109,13 @@ class RecognitionTools(object):
     def listObject(self, request, bb=None, internal_call=False):
         rospy.loginfo('module type : List')
 
-        if bb is None:
-            bb = self.bbox
+        response_list = RecognitionListResponse()
+        coordinate_list = []
 
         object_name = request.target_name
         sort_option = request.sort_option
-
-        response_list = RecognitionListResponse()
-        coordinate_list = []
+        if bb is None:
+            bb = self.bbox
         bbox_list = self.createBboxList(bb)
 
         # 座標を格納したlistを作成
@@ -193,42 +192,40 @@ class RecognitionTools(object):
                 find_flg = object_name in bbox_list
         return find_flg
 
-    def localizeObject(self, object_name='', sort_request=[], bb=None):
-        sort
+    def localizeObject(self, request, bb=None):
         rospy.loginfo('module type : Localize')
         Detector = CallDetector()
 
+        response_centroid = RecognitionLocalizeResponse()
+        response_centroid.centroid_point.x = numpy.nan
+        response_centroid.centroid_point.y = numpy.nan
+        response_centroid.centroid_point.z = numpy.nan
+
+        object_name = request.target_name
+        sort_option = request.sort_option
         if bb is None:
             bb = self.bbox
-        if type(object_name) != str:
-            object_name = object_name.target_name
-
-        object_centroid = Point()
-        object_centroid.x = numpy.nan
-        object_centroid.y = numpy.nan
-        object_centroid.z = numpy.nan
-
         bbox_list = self.createBboxList(bb)
-        object_count = self.countObject(object_name)
 
-        if object_name == 'any':
-            exist_flg = bool(object_count)
-            if exist_flg:
-                object_list = self.listObject(object_name)
-                object_name = object_list[0]
-        else:
-            exist_flg = bool(object_count)
+        exist_flg = bool(self.countObject(RecognitionCountRequest(target_name=object_name)))
 
+        # 対象の物体が存在しない場合
         if not exist_flg:
-            return object_centroid
+            return response_centroid
 
-        index_num = bbox_list.index(object_name)
-        center_x = int((bb[index_num].ymin + bb[index_num].ymax)/2)
-        center_y = int((bb[index_num].xmin + bb[index_num].xmax)/2)
+        # リストの取得
+        list_request = RecognitionListRequest()
+        list_request.target_name = object_name
+        list_request.sort_option = sort_option.data
+        object_list = self.listObject(list_request).object_list
+        center_x, center_y = object_list[sort_option.num][1]
+
+        # 三次元位置の推定
         rospy.sleep(0.5)
         Detector.detectorService(center_x, center_y)
-        object_centroid = Detector.object_centroid
-        return object_centroid
+        response_centroid.centroid_point = Detector.object_centroid
+
+        return response_centroid
 
 
 if __name__ == '__main__':
