@@ -9,7 +9,11 @@ import rosgraph
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 # -- Custom Message --
-from happymimi_recognition_msgs.srv import RecognitionList, RecognitionListRequest, RecognitionListResponse, RecognitionCount, RecognitionCountRequest, RecognitionFind, RecognitionLocalize, RecognitionLocalizeResponse, PositionEstimator
+from happymimi_recognition_msgs.srv import (RecognitionList, RecognitionListRequest, RecognitionListResponse,
+                                            RecognitionCount, RecognitionCountRequest, RecognitionCountResponse,
+                                            RecognitionFind, RecognitionFindRequest, RecognitionFindResponse,
+                                            RecognitionLocalize, RecognitionLocalizeRequest, RecognitionLocalizeResponse,
+                                            PositionEstimator, PositionEstimatorRequest)
 
 class MimiControl(object):
     def __init__(self):
@@ -38,21 +42,6 @@ class MimiControl(object):
         self.twist_value.angular.z = 0.0
         self.cmd_vel_pub.publish(self.twist_value)
 
-    def moveBase(self, rad_speed):
-        for speed_i in range(10):
-            self.twist_value.linear.x = rad_speed*0.05*speed_i
-            self.twist_value.angular.z = 0
-            self.cmd_vel_pub.publish(self.twist_value)
-            rospy.sleep(0.1)
-        for speed_i in range(10):
-            self.twist_value.linear.x = rad_speed*0.05*(10-speed_i)
-            self.twist_value.angular.z = 0
-            self.cmd_vel_pub.publish(self.twist_value)
-            rospy.sleep(0.1)
-        self.twist_value.linear.x = 0
-        self.twist_value.angular.z = 0
-        self.cmd_vel_pub.publish(self.twist_value)
-
 
 class CallDetector(object):
     def __init__(self):
@@ -62,7 +51,10 @@ class CallDetector(object):
 
     def detectorService(self, center_x, center_y):
         rospy.wait_for_service('/detect/depth')
-        res = self.detect_depth(center_x, center_y)
+        request_position_estimator = PositionEstimatorRequest()
+        request_position_estimator.center_x = center_x
+        request_position_estimator.center_y = center_y
+        res = self.detect_depth(request_position_estimator)
         self.object_centroid = res.centroid_point
 
 
@@ -146,15 +138,15 @@ class RecognitionTools(object):
 
         return response_list
 
-    def countObject(self, object_name='', bb=None):
+    def countObject(self, request, bb=None):
         rospy.loginfo('module type : Count')
 
+        response_count = RecognitionCountResponse()
+        object_count = 0
+
+        object_name = request.target_name
         if bb is None:
             bb = self.bbox
-        if type(object_name) != str:
-            object_name = object_name.target_name
-
-        object_count = 0
         bbox_list = self.createBboxList(bb)
 
         if object_name == 'any':
@@ -163,17 +155,20 @@ class RecognitionTools(object):
                     object_count += 1
         else:
             object_count = bbox_list.count(object_name)
-        return object_count
+        response_count.object_num = object_count
 
-    def findObject(self, object_name=''):
+        return response_count
+
+    def findObject(self, request):
         rospy.loginfo('module type : Find')
+
         mimi_control = MimiControl()
 
-        if type(object_name) != str:
-            object_name = object_name.target_name
-
-        find_flg = self.countObject(object_name)
+        response_flg = RecognitionFindResponse()
+        object_name = request.target_name
         loop_count = 0
+
+        find_flg = bool(self.countObject(RecognitionCountRequest(object_name)))
 
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
@@ -189,10 +184,13 @@ class RecognitionTools(object):
                 find_flg = bool(len(list(set(self.object_dict['any'])&set(bbox_list))))
             else:
                 find_flg = object_name in bbox_list
-        return find_flg
+        response_flg.result = find_flg
+
+        return response_flg
 
     def localizeObject(self, request, bb=None):
         rospy.loginfo('module type : Localize')
+
         Detector = CallDetector()
 
         response_centroid = RecognitionLocalizeResponse()
