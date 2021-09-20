@@ -168,7 +168,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         loop_count = 0
 
-        find_flg = bool(self.countObject(RecognitionCountRequest(object_name)))
+        find_flg = bool(self.countObject(RecognitionCountRequest(object_name)).object_num)
 
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
@@ -204,7 +204,7 @@ class RecognitionTools(object):
             bb = self.bbox
         bbox_list = self.createBboxList(bb)
 
-        exist_flg = bool(self.countObject(RecognitionCountRequest(target_name=object_name)))
+        exist_flg = bool(self.countObject(RecognitionCountRequest(target_name=object_name)).object_num)
 
         # 対象の物体が存在しない場合
         if not exist_flg:
