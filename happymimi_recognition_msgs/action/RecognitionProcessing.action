@@ -3,6 +3,7 @@ string target_name
 happymimi_msgs/StrInt sort_option
 ---
 # Define the result
+bool result_flg
 geometry_msgs/Point centroid_point
 ---
 # Define a feedback message
