@@ -10,12 +10,12 @@ import actionlib
 import smach
 from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
-from darknet_ros_msgs.msg import BoundingBoxes
+#from darknet_ros_msgs.msg import BoundingBoxes
 # -- Action msg --
 from happymimi_recognition_msgs.msg import RecognitionProcessingAction
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
 
-from recognition_tools import RecognitionTools
+#from recognition_tools import RecognitionTools
 
 class MimiControl(object):
     def __init__(self):
@@ -75,9 +75,7 @@ class Server(smach.State):
 
 class Count(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['count_success',
-                                               'count_failed',
-                                               'action_failed':'action_failed'],
+        smach.State.__init__(self, outcomes = ['count_success', 'count_failure', 'action_failed'],
                              input_keys = ['target_name_in', 'sort_option_in'],
                              output_keys = ['sort_option_out', 'bbox_out'])
 
@@ -100,7 +98,7 @@ class Count(smach.State):
 
 class Find(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['find_success', 'find_faild'],
+        smach.State.__init__(self, outcomes = ['find_success', 'find_failure'],
                              input_keys = ['target_name_in'],
                              output_keys = [])
 
@@ -116,7 +114,7 @@ class Find(smach.State):
 
 class Localize(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['localize_success', 'localize_faild'],
+        smach.State.__init__(self, outcomes = ['localize_success', 'localize_failure'],
                              input_keys = ['target_name_in', 'sort_option_in', 'bbox_in'],
                              output_keys = ['centroid_out'])
 
@@ -136,7 +134,7 @@ class Localize(smach.State):
 
 class CheckCenter(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['check_center_success', 'check_center_faild'],
+        smach.State.__init__(self, outcomes = ['check_center_success', 'check_center_failure', 'action_failed'],
                              input_keys = ['sort_option_in', 'centroid_in'],
                              output_keys = ['sort_option_out'])
 
@@ -149,9 +147,9 @@ class CheckCenter(smach.State):
         if abs(object_angle) < 4.5:
             userdata.result_message.centroid_point = userdata.centroid_in
             return 'check_center_success'
-        '''
-        elif 規定の回数を超えたらaction_failed
-        '''
+        elif object_angle:
+            #規定の回数を超えたらaction_failed
+            pass
         else:
             if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
             self.mimi_control.angleRotation(object_angle)
@@ -180,15 +178,16 @@ class Move(smach.State):
 if __name__ == '__main__':
     rospy.init_node('recognition_action_server')
     
-    sm_top = smach.StateMachine(outcomes = ['success', 'action_failed', 'preempted'],
+    sm= smach.StateMachine(outcomes = ['success', 'action_failed', 'preempted'],
                           input_keys = ['goal_message', 'result_message'],
                           output_keys = ['result_message'])
 
-    sm_top.userdata.action_num = 0
+    sm.userdata.existence_loop_count = 0
+    sm.userdata.center_loop_count = 0
 
-    with sm_top:
+    with sm:
         smach.StateMachine.add('SERVER', Server(),
-                         transitions = {'start_action':'CHECK_EXISTENCE'},
+                         transitions = {'start_action':'COUNT'},
                          remapping = {'goal_in':'goal_message',
                                       'target_name_out':'target_name',
                                       'sort_option_out':'sort_option'})
@@ -199,21 +198,24 @@ if __name__ == '__main__':
                                         'action_failed':'action_failed'},
                          remapping = {'target_name_in':'target_name',
                                       'sort_option_in':'sort_option',
+                                      'e_l_count_in':'existence_loop_count',
                                       'sort_option_out':'sort_option',
                                       'bbox_out':'bbox'})
 
         smach.StateMachine.add('FIND', Find(),
                          transitions = {'find_success':'LOCALIZE',
                                         'find_failure':'MOVE'},
-                         remapping = {'target_name_in':'target_name'})
+                         remapping = {'target_name_in':'target_name',
+                                      'e_l_count_out':'existence_loop_count'})
 
         smach.StateMachine.add('LOCALIZE', Localize(),
                          transitions = {'localize_success':'CHECK_CENTER',
-                                        'localize_failure':'Move'},
+                                        'localize_failure':'MOVE'},
                          remapping = {'target_name_in':'target_name',
                                       'sort_option_in':'sort_option',
                                       'bbox_in':'bbox',
-                                      'centroid_out':'centroid'})
+                                      'centroid_out':'centroid',
+                                      'e_l_count_out':'existence_loop_count'})
 
         smach.StateMachine.add('CHECK_CENTER', CheckCenter(),
                          transitions = {'check_center_success':'success',
@@ -224,12 +226,12 @@ if __name__ == '__main__':
                                       'sort_option_out':'sort_option'})
 
         smach.StateMachine.add('MOVE', Move(),
-                         transitions = {'retry':'CHECK_EXISTENCE'},
+                         transitions = {'retry':'COUNT'},
                          remapping = {})
 
 
     asw = ActionServerWrapper('/recognition/action', RecognitionProcessingAction,
-                              wrapped_container = sm_top,
+                              wrapped_container = sm,
                               succeeded_outcomes = ['success'],
                               aborted_outcomes = ['action_failed'],
                               preempted_outcomes = ['preempted'],
