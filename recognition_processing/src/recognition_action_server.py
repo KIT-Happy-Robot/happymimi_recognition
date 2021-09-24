@@ -10,12 +10,12 @@ import actionlib
 import smach
 from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
-#from darknet_ros_msgs.msg import BoundingBoxes
+from darknet_ros_msgs.msg import BoundingBoxes
 # -- Action msg --
 from happymimi_recognition_msgs.msg import RecognitionProcessingAction
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
 
-#from recognition_tools import RecognitionTools
+from recognition_tools import RecognitionTools
 
 class MimiControl(object):
     def __init__(self):
@@ -76,14 +76,18 @@ class Server(smach.State):
 class Count(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['count_success', 'count_failure', 'action_failed'],
-                             input_keys = ['target_name_in', 'sort_option_in'],
+                             input_keys = ['target_name_in', 'sort_option_in', 'e_l_count_in'],
                              output_keys = ['sort_option_out', 'bbox_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Count')
 
-        userdata.bbox_out = RecognitionTools.bbox
-        object_count = RecognitionTools.countObject(RecognitionCountRequest(userdata.target_name_in), userdata.bbox_out).object_num
+        Recognition_Tools = RecognitionTools()
+        rospy.sleep(0.5)
+        bbox = Recognition_Tools.bbox
+        userdata.bbox_out = bbox
+        print bbox
+        object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
         exist_flg = object_count > 0
 
         if (userdata.sort_option_in.num + 1) > object_count:
@@ -94,13 +98,12 @@ class Count(smach.State):
             return 'count_success'
         else:
             return 'count_failed'
-        
 
 class Find(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['find_success', 'find_failure'],
                              input_keys = ['target_name_in'],
-                             output_keys = [])
+                             output_keys = ['e_l_count_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Find')
@@ -116,7 +119,7 @@ class Localize(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['localize_success', 'localize_failure'],
                              input_keys = ['target_name_in', 'sort_option_in', 'bbox_in'],
-                             output_keys = ['centroid_out'])
+                             output_keys = ['centroid_out', 'e_l_count_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Localize')
@@ -178,10 +181,10 @@ class Move(smach.State):
 
 if __name__ == '__main__':
     rospy.init_node('recognition_action_server')
-    
+
     sm= smach.StateMachine(outcomes = ['success', 'action_failed', 'preempted'],
-                          input_keys = ['goal_message', 'result_message'],
-                          output_keys = ['result_message'])
+                          input_keys = ['action_goal', 'action_result'],
+                          output_keys = ['action_result'])
 
     sm.userdata.existence_loop_count = 0
     sm.userdata.center_loop_count = 0
@@ -189,7 +192,7 @@ if __name__ == '__main__':
     with sm:
         smach.StateMachine.add('SERVER', Server(),
                          transitions = {'start_action':'COUNT'},
-                         remapping = {'goal_in':'goal_message',
+                         remapping = {'goal_in':'action_goal',
                                       'target_name_out':'target_name',
                                       'sort_option_out':'sort_option'})
 
