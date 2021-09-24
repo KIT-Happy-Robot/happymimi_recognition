@@ -145,6 +145,7 @@ class CheckCenter(smach.State):
 
         object_angle = math.atan2(userdata.centroid_in.y, userdata.centroid_in.x)/math.pi*180
         if abs(object_angle) < 4.5:
+            userdata.result_message.result_flg = True
             userdata.result_message.centroid_point = userdata.centroid_in
             return 'check_center_success'
         elif object_angle:
