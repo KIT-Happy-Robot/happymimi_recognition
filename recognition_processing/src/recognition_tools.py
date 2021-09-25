@@ -59,6 +59,8 @@ class CallDetector(object):
 
 
 class RecognitionTools(object):
+    bbox = []
+
     def __init__(self):
         rospy.Subscriber('/darknet_ros/bounding_boxes',BoundingBoxes,self.boundingBoxCB)
         rospy.Service('/recognition/list',RecognitionList,self.listObject)
@@ -73,7 +75,6 @@ class RecognitionTools(object):
         except rosgraph.masterapi.MasterError:
             self.object_dict = {'any':['cup', 'bottle']}
 
-        self.bbox = []
         self.update_time = 0 # darknetからpublishされた時刻を記録
         self.update_flg = False # darknetからpublishされたかどうかの確認
 
@@ -82,12 +83,12 @@ class RecognitionTools(object):
     def boundingBoxCB(self,bb):
         self.update_time = time.time()
         self.update_flg = True
-        self.bbox = bb.bounding_boxes
+        RecognitionTools.bbox = bb.bounding_boxes
 
     def initializeBbox(self, event):
-        # darknetが何も認識していない時にself.bboxを初期化する
+        # darknetが何も認識していない時にRecognitionTools.bboxを初期化する
         if time.time() - self.update_time > 1.0 and self.update_flg:
-            self.bbox = []
+            RecognitionTools.bbox = []
             self.update_flg = False
             rospy.loginfo('initialize')
 
@@ -106,7 +107,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         sort_option = request.sort_option
         if bb is None:
-            bb = self.bbox
+            bb = RecognitionTools.bbox
         bbox_list = self.createBboxList(bb)
 
         # 座標を格納したlistを作成
@@ -146,7 +147,7 @@ class RecognitionTools(object):
 
         object_name = request.target_name
         if bb is None:
-            bb = self.bbox
+            bb = RecognitionTools.bbox
         bbox_list = self.createBboxList(bb)
 
         if object_name == 'any':
@@ -177,7 +178,7 @@ class RecognitionTools(object):
             mimi_control.angleRotation(rotation_angle)
             rospy.sleep(3.0)
 
-            bbox_list = self.createBboxList(self.bbox)
+            bbox_list = self.createBboxList(RecognitionTools.bbox)
             if object_name == '':
                 find_flg = bool(len(bbox_list))
             elif object_name == 'any':
@@ -201,7 +202,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         sort_option = request.sort_option
         if bb is None:
-            bb = self.bbox
+            bb = RecognitionTools.bbox
         bbox_list = self.createBboxList(bb)
 
         exist_flg = bool(self.countObject(RecognitionCountRequest(target_name=object_name)).object_num)
@@ -214,7 +215,7 @@ class RecognitionTools(object):
         list_request = RecognitionListRequest()
         list_request.target_name = object_name
         list_request.sort_option = sort_option.data
-        object_list = self.listObject(request=list_request, bb=self.bbox, internal_call=True).object_list
+        object_list = self.listObject(request=list_request, bb=RecognitionTools.bbox, internal_call=True).object_list
         try:
             center_x, center_y = object_list[sort_option.num][1]
         except IndexError:
