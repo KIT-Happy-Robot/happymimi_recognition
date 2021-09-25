@@ -11,11 +11,13 @@ import smach
 from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
+from happymimi_msgs.msg import StrInt
 # -- Action msg --
 from happymimi_recognition_msgs.msg import RecognitionProcessingAction
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
-
+# -- Class import --
 from recognition_tools import RecognitionTools
+
 
 class MimiControl(object):
     def __init__(self):
@@ -82,22 +84,20 @@ class Count(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: Count')
 
-        Recognition_Tools = RecognitionTools()
-        rospy.sleep(0.5)
         bbox = Recognition_Tools.bbox
-        userdata.bbox_out = bbox
         print bbox
+        userdata.bbox_out = bbox
         object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
         exist_flg = object_count > 0
 
         if (userdata.sort_option_in.num + 1) > object_count:
-            userdata.sort_option_out.data = 'center'
-            userdata.sort_option_out.num = 0
+            reset_option = StrInt(data='center', num=0)
+            userdata.sort_option_out = reset_option
 
         if exist_flg:
             return 'count_success'
         else:
-            return 'count_failed'
+            return 'count_failure'
 
 class Find(smach.State):
     def __init__(self):
@@ -108,12 +108,12 @@ class Find(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: Find')
 
-        find_flg = RecognitionTools.findObject(RecognitionFindRequest(userdata.target_name_in)).result
+        find_flg = Recognition_Tools.findObject(RecognitionFindRequest(userdata.target_name_in)).result
 
         if find_flg:
             return 'find_success'
         else:
-            return 'find_failed'
+            return 'find_failure'
 
 class Localize(smach.State):
     def __init__(self):
@@ -128,12 +128,12 @@ class Localize(smach.State):
         localize_request.target_name = target_name
         localize_request.sort_option = userdata.sort_option_in
 
-        userdata.centroid_out = RecognitionTools.localizeObject(localize_request).centroid_point
+        userdata.centroid_out = Recognition_Tools.localizeObject(localize_request).centroid_point
 
         if not math.isnan(userdata.centroid_out.x):
             return 'localize_success'
         else:
-            return 'localize_faild'
+            return 'localize_failure'
 
 class CheckCenter(smach.State):
     def __init__(self):
@@ -158,7 +158,7 @@ class CheckCenter(smach.State):
             if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
             self.mimi_control.angleRotation(object_angle)
             #rospy.sleep(4.0)
-            return 'check_center_faild'
+            return 'check_center_failure'
 
 class Move(smach.State):
     move_count = 0
@@ -173,14 +173,19 @@ class Move(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: Move')
 
+        '''
         Move.move_count += 1
         move_range = -0.8*(((move_count)%4)/2)+0.4
         mimi_control.moveBase(move_range)
+        '''
         return 'retry'
 
 
 if __name__ == '__main__':
     rospy.init_node('recognition_action_server')
+
+    global Recognition_Tools
+    Recognition_Tools = RecognitionTools()
 
     sm= smach.StateMachine(outcomes = ['success', 'action_failed', 'preempted'],
                           input_keys = ['action_goal', 'action_result'],
