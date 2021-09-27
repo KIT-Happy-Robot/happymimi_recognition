@@ -13,7 +13,7 @@ from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 from happymimi_msgs.msg import StrInt
 # -- Action msg --
-from happymimi_recognition_msgs.msg import RecognitionProcessingAction
+from happymimi_recognition_msgs.msg import RecognitionProcessingAction, RecognitionProcessingResult
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
 # -- Class import --
 from recognition_tools import RecognitionTools
@@ -155,11 +155,8 @@ class CheckCenter(smach.State):
         reset_option = StrInt(data='center', num=0)
         userdata.sort_option_out = reset_option
 
-        print object_angle
         if abs(object_angle) < 4.5:
-            result = 
-            userdata.result_out.result_flg = True
-            userdata.result_out.centroid_point = userdata.centroid_in
+            result = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
             return 'check_center_success'
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
@@ -175,7 +172,7 @@ class Move(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes = ['retry'],
-                             input_keys = [],
+                             input_keys = ['c_l_count_in'],
                              output_keys = [])
 
         self.mimi_control = MimiControl()
@@ -183,11 +180,8 @@ class Move(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: Move')
 
-        '''
-        Move.move_count += 1
-        move_range = -0.8*(((move_count)%4)/2)+0.4
+        move_range = -0.8*(((userdata.c_l_count_in)%4)/2)+0.4
         mimi_control.moveBase(move_range)
-        '''
         return 'retry'
 
 
@@ -250,7 +244,7 @@ if __name__ == '__main__':
 
         smach.StateMachine.add('MOVE', Move(),
                          transitions = {'retry':'COUNT'},
-                         remapping = {})
+                         remapping = {'c_l_count_in':'center_loop_count'})
 
 
     asw = ActionServerWrapper('/recognition/action', RecognitionProcessingAction,
