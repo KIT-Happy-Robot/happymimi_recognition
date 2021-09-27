@@ -66,13 +66,15 @@ class Server(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['start_action'],
                              input_keys = ['goal_in'],
-                             output_keys = ['target_name_out', 'sort_option_out'])
+                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Server')
 
         userdata.target_name_out = userdata.goal_in.target_name
         userdata.sort_option_out = userdata.goal_in.sort_option
+        userdata.e_l_count_out = 0
+        userdata.c_l_count_out = 0
         return 'start_action'
 
 class Count(smach.State):
@@ -85,7 +87,6 @@ class Count(smach.State):
         rospy.loginfo('Executing state: Count')
 
         bbox = Recognition_Tools.bbox
-        print bbox
         userdata.bbox_out = bbox
         object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
         exist_flg = object_count > 0
@@ -96,13 +97,15 @@ class Count(smach.State):
 
         if exist_flg:
             return 'count_success'
+        elif userdata.e_l_count_in > 3:
+            return 'action_failed'
         else:
             return 'count_failure'
 
 class Find(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['find_success', 'find_failure'],
-                             input_keys = ['target_name_in'],
+                             input_keys = ['target_name_in', 'e_l_count_in'],
                              output_keys = ['e_l_count_out'])
 
     def execute(self, userdata):
@@ -113,12 +116,13 @@ class Find(smach.State):
         if find_flg:
             return 'find_success'
         else:
+            userdata.e_l_count_out = userdata.e_l_count_in + 2
             return 'find_failure'
 
 class Localize(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['localize_success', 'localize_failure'],
-                             input_keys = ['target_name_in', 'sort_option_in', 'bbox_in'],
+                             input_keys = ['target_name_in', 'sort_option_in', 'bbox_in', 'e_l_count_in'],
                              output_keys = ['centroid_out', 'e_l_count_out'])
 
     def execute(self, userdata):
@@ -127,19 +131,20 @@ class Localize(smach.State):
         localize_request = RecognitionLocalizeRequest()
         localize_request.target_name = target_name
         localize_request.sort_option = userdata.sort_option_in
+        object_centroid = Recognition_Tools.localizeObject(localize_request).centroid_point
+        userdata.centroid_out = object_centroid
 
-        userdata.centroid_out = Recognition_Tools.localizeObject(localize_request).centroid_point
-
-        if not math.isnan(userdata.centroid_out.x):
+        if not math.isnan(object_centroid.x):
             return 'localize_success'
         else:
+            userdata.e_l_count_out = userdata.e_l_count_in + 1
             return 'localize_failure'
 
 class CheckCenter(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['check_center_success', 'check_center_failure', 'action_failed'],
                              input_keys = ['sort_option_in', 'centroid_in'],
-                             output_keys = ['sort_option_out'])
+                             output_keys = ['sort_option_out', 'result_out'])
 
         self.mimi_control = MimiControl()
 
@@ -147,9 +152,12 @@ class CheckCenter(smach.State):
         rospy.loginfo('Executing state: CheckCenter')
 
         object_angle = math.atan2(userdata.centroid_in.y, userdata.centroid_in.x)/math.pi*180
+        reset_option = StrInt(data='center', num=0)
+        userdata.sort_option_out = reset_option
+
         if abs(object_angle) < 4.5:
-            userdata.result_message.result_flg = True
-            userdata.result_message.centroid_point = userdata.centroid_in
+            userdata.result_out.result_flg = True
+            userdata.result_out.centroid_point = userdata.centroid_in
             return 'check_center_success'
         elif object_angle:
             #規定の回数を超えたらaction_failed
@@ -191,15 +199,14 @@ if __name__ == '__main__':
                           input_keys = ['action_goal', 'action_result'],
                           output_keys = ['action_result'])
 
-    sm.userdata.existence_loop_count = 0
-    sm.userdata.center_loop_count = 0
-
     with sm:
         smach.StateMachine.add('SERVER', Server(),
                          transitions = {'start_action':'COUNT'},
                          remapping = {'goal_in':'action_goal',
                                       'target_name_out':'target_name',
-                                      'sort_option_out':'sort_option'})
+                                      'sort_option_out':'sort_option',
+                                      'e_l_count_out':'existence_loop_count',
+                                      'c_l_count_out':'center_loop_count'})
 
         smach.StateMachine.add('COUNT', Count(),
                          transitions = {'count_success':'LOCALIZE',
@@ -215,6 +222,7 @@ if __name__ == '__main__':
                          transitions = {'find_success':'LOCALIZE',
                                         'find_failure':'MOVE'},
                          remapping = {'target_name_in':'target_name',
+                                      'e_l_count_in':'existence_loop_count',
                                       'e_l_count_out':'existence_loop_count'})
 
         smach.StateMachine.add('LOCALIZE', Localize(),
@@ -223,6 +231,7 @@ if __name__ == '__main__':
                          remapping = {'target_name_in':'target_name',
                                       'sort_option_in':'sort_option',
                                       'bbox_in':'bbox',
+                                      'e_l_count_in':'existence_loop_count',
                                       'centroid_out':'centroid',
                                       'e_l_count_out':'existence_loop_count'})
 
@@ -232,7 +241,8 @@ if __name__ == '__main__':
                                         'action_failed':'action_failed'},
                          remapping = {'sort_option_in':'sort_option',
                                       'centroid_in':'centroid',
-                                      'sort_option_out':'sort_option'})
+                                      'sort_option_out':'sort_option',
+                                      'result_out':'action_result'})
 
         smach.StateMachine.add('MOVE', Move(),
                          transitions = {'retry':'COUNT'},
