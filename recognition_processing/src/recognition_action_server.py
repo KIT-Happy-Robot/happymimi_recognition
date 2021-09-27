@@ -129,7 +129,7 @@ class Localize(smach.State):
         rospy.loginfo('Executing state: Localize')
 
         localize_request = RecognitionLocalizeRequest()
-        localize_request.target_name = target_name
+        localize_request.target_name = userdata.target_name_in
         localize_request.sort_option = userdata.sort_option_in
         object_centroid = Recognition_Tools.localizeObject(localize_request).centroid_point
         userdata.centroid_out = object_centroid
@@ -155,17 +155,19 @@ class CheckCenter(smach.State):
         reset_option = StrInt(data='center', num=0)
         userdata.sort_option_out = reset_option
 
+        print object_angle
         if abs(object_angle) < 4.5:
+            result = 
             userdata.result_out.result_flg = True
             userdata.result_out.centroid_point = userdata.centroid_in
             return 'check_center_success'
-        elif c_l_count_in > 3:
+        elif userdata.c_l_count_in > 3:
             return 'action_failed'
         else:
             if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
             self.mimi_control.angleRotation(object_angle)
             #rospy.sleep(4.0)
-            c_l_count_out = c_l_count_in + 1
+            userdata.c_l_count_out = userdata.c_l_count_in + 1
             return 'check_center_failure'
 
 class Move(smach.State):
