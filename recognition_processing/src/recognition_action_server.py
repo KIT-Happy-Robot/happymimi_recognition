@@ -143,8 +143,8 @@ class Localize(smach.State):
 class CheckCenter(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['check_center_success', 'check_center_failure', 'action_failed'],
-                             input_keys = ['sort_option_in', 'centroid_in'],
-                             output_keys = ['sort_option_out', 'result_out'])
+                             input_keys = ['sort_option_in', 'centroid_in', 'c_l_count_in'],
+                             output_keys = ['sort_option_out', 'c_l_count_out', 'result_out'])
 
         self.mimi_control = MimiControl()
 
@@ -159,13 +159,13 @@ class CheckCenter(smach.State):
             userdata.result_out.result_flg = True
             userdata.result_out.centroid_point = userdata.centroid_in
             return 'check_center_success'
-        elif object_angle:
-            #規定の回数を超えたらaction_failed
-            pass
+        elif c_l_count_in > 3:
+            return 'action_failed'
         else:
             if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
             self.mimi_control.angleRotation(object_angle)
             #rospy.sleep(4.0)
+            c_l_count_out = c_l_count_in + 1
             return 'check_center_failure'
 
 class Move(smach.State):
@@ -241,7 +241,9 @@ if __name__ == '__main__':
                                         'action_failed':'action_failed'},
                          remapping = {'sort_option_in':'sort_option',
                                       'centroid_in':'centroid',
+                                      'c_l_count_in':'center_loop_count',
                                       'sort_option_out':'sort_option',
+                                      'c_l_count_out':'center_loop_count',
                                       'result_out':'action_result'})
 
         smach.StateMachine.add('MOVE', Move(),
