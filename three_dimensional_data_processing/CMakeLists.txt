@@ -140,7 +140,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(three_dimensional_position_estimator src/three_dimensional_position_estimator.cpp)
+add_executable(position_estimator src/position_estimator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,7 +154,7 @@ add_executable(three_dimensional_position_estimator src/three_dimensional_positi
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(
-  three_dimensional_position_estimator
+  position_estimator
   ${catkin_LIBRARIES}
   ${OpenCV_INCLUDE_DIRS}
 )
