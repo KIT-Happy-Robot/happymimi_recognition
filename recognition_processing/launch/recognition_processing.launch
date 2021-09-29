@@ -1,0 +1,5 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <rosparam file="$(find recognition_processing)/param/object_dict.yaml" command="load" ns="object_dict"/>
+  <node pkg="recognition_processing" name="recognition_action_server" type="recognition_action_server.py" output="screen" />
+</launch>
