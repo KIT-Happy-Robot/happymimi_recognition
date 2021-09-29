@@ -1,0 +1,4 @@
+<!-- -*- mode: XML -*- -->
+<launch>
+  <node pkg="three_dimensional_data_processing" name="position_estimator" type="position_estimator" />
+</launch>
