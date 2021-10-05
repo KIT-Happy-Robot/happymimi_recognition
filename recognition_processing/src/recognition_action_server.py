@@ -66,7 +66,7 @@ class Server(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['start_action'],
                              input_keys = ['goal_in'],
-                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out'])
+                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out', 'result_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Server')
@@ -75,6 +75,7 @@ class Server(smach.State):
         userdata.sort_option_out = userdata.goal_in.sort_option
         userdata.e_l_count_out = 0
         userdata.c_l_count_out = 0
+        userdata.result_out = RecognitionProcessingResult(result_flg=False, centroid_point=Point())
         return 'start_action'
 
 class Count(smach.State):
@@ -156,7 +157,7 @@ class CheckCenter(smach.State):
         userdata.sort_option_out = reset_option
 
         if abs(object_angle) < 4.5:
-            result = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
+            userdata.result_out = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
             return 'check_center_success'
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
@@ -181,7 +182,7 @@ class Move(smach.State):
         rospy.loginfo('Executing state: Move')
 
         move_range = -0.8*(((userdata.c_l_count_in)%4)/2)+0.4
-        mimi_control.moveBase(move_range)
+        self.mimi_control.moveBase(move_range)
         return 'retry'
 
 
@@ -202,7 +203,8 @@ if __name__ == '__main__':
                                       'target_name_out':'target_name',
                                       'sort_option_out':'sort_option',
                                       'e_l_count_out':'existence_loop_count',
-                                      'c_l_count_out':'center_loop_count'})
+                                      'c_l_count_out':'center_loop_count',
+                                      'result_out':'action_result'})
 
         smach.StateMachine.add('COUNT', Count(),
                          transitions = {'count_success':'LOCALIZE',
