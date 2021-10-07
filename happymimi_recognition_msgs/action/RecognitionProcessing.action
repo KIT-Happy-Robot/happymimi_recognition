@@ -1,9 +1,10 @@
 # Define the goal
-string recognition_goal
+string target_name
 happymimi_msgs/StrInt sort_option
 ---
 # Define the result
-geometry_msgs/Point recognition_result
+bool result_flg
+geometry_msgs/Point centroid_point
 ---
 # Define a feedback message
-bool recognition_feedback
+bool feedback_flg
