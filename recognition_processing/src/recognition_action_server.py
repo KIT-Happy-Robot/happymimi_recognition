@@ -7,17 +7,22 @@ import numpy
 import rospy
 import rosparam
 import actionlib
+import smach
+from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
+from darknet_ros_msgs.msg import BoundingBoxes
+from happymimi_msgs.msg import StrInt
 # -- Action msg --
-from happymimi_recognition_msgs.msg import *
-
+from happymimi_recognition_msgs.msg import RecognitionProcessingAction, RecognitionProcessingResult
+from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
+# -- Class import --
 from recognition_tools import RecognitionTools
+
 
 class MimiControl(object):
     def __init__(self):
 
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=1)
-
         self.twist_value = Twist()
 
     def angleRotation(self, degree):
@@ -57,70 +62,201 @@ class MimiControl(object):
         self.cmd_vel_pub.publish(self.twist_value)
 
 
-class RecognitionActionServer(object):
+class Server(smach.State):
     def __init__(self):
-        self.act = actionlib.SimpleActionServer('/manipulation/localize',
-                                                RecognitionProcessingAction,
-                                                execute_cb = self.actionMain,
-                                                auto_start = False)
-        self.act.register_preempt_callback(self.actionPreempt)
+        smach.State.__init__(self, outcomes = ['start_action'],
+                             input_keys = ['goal_in'],
+                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out', 'result_out'])
 
-        self.preempt_flg = False
-        self.act.start()
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: Server')
 
-        self.recognition_tools = RecognitionTools()
+        userdata.target_name_out = userdata.goal_in.target_name
+        userdata.sort_option_out = userdata.goal_in.sort_option
+        userdata.e_l_count_out = 0
+        userdata.c_l_count_out = 0
+        userdata.result_out = RecognitionProcessingResult(result_flg=False, centroid_point=Point())
+        return 'start_action'
 
-    def actionPreempt(self):
-        rospy.loginfo('preempt callback')
-        self.act.set_preempted(text = 'message for preempt')
-        self.preempt_flg = True
+class Count(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['count_success', 'count_failure', 'action_failed'],
+                             input_keys = ['target_name_in', 'sort_option_in', 'e_l_count_in'],
+                             output_keys = ['sort_option_out', 'bbox_out'])
 
-    def actionMain(self, goal):
-        target_name = goal.recognition_goal
-        rospy.loginfo('start action >> recognize %s'%(target_name))
-        action_feedback = RecognitionProcessingFeedback()
-        action_result = RecognitionProcessingResult()
-        mimi_control = MimiControl()
-        move_count = 0
-        while not rospy.is_shutdown():
-            bb = self.recognition_tools.bbox
-            object_count, _ = self.recognition_tools.countObject(target_name, bb)
-            exist_flg = bool(object_count)
-            if exist_flg:
-                object_centroid = self.recognition_tools.localizeObject(target_name, bb)
-                if not math.isnan(object_centroid.x):# 物体が正面になるように回転する処理
-                    object_angle = math.atan2(object_centroid.y, object_centroid.x)/math.pi*180
-                    if abs(object_angle) < 4.5:
-                        # success
-                        rospy.loginfo('Succeeded')
-                        action_result.recognition_result = object_centroid
-                        self.act.set_succeeded(action_result)
-                        break
-                    else:
-                        # retry
-                        rospy.loginfo('There is not object in front.')
-                        object_angle *= 1.5 # kobukiが重いので
-                        if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
-                        mimi_control.angleRotation(object_angle)
-                        rospy.sleep(4.0)
-                else:
-                    #前後進
-                    move_count += 1
-                    move_range = -0.8*(((move_count)%4)/2)+0.4
-                    mimi_control.moveBase(move_range)
-                    exist_flg = False
-            else:
-                find_flg = self.recognition_tools.findObject(target_name)
-                exist_flg = find_flg
-            action_feedback.recognition_feedback = exist_flg
-            self.act.publish_feedback(action_feedback)
-            rospy.sleep(1.0) #preemptのズレ調整用
-            if self.preempt_flg:
-                self.preempt_flg = False
-                break
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: Count')
+
+        bbox = Recognition_Tools.bbox
+        userdata.bbox_out = bbox
+        object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
+        exist_flg = object_count > 0
+
+        if (userdata.sort_option_in.num + 1) > object_count:
+            reset_option = StrInt(data='center', num=0)
+            userdata.sort_option_out = reset_option
+
+        if exist_flg:
+            return 'count_success'
+        elif userdata.e_l_count_in > 3:
+            return 'action_failed'
+        else:
+            return 'count_failure'
+
+class Find(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['find_success', 'find_failure'],
+                             input_keys = ['target_name_in', 'e_l_count_in'],
+                             output_keys = ['e_l_count_out'])
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: Find')
+
+        find_flg = Recognition_Tools.findObject(RecognitionFindRequest(userdata.target_name_in)).result
+
+        if find_flg:
+            return 'find_success'
+        else:
+            userdata.e_l_count_out = userdata.e_l_count_in + 2
+            return 'find_failure'
+
+class Localize(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['localize_success', 'localize_failure'],
+                             input_keys = ['target_name_in', 'sort_option_in', 'bbox_in', 'e_l_count_in'],
+                             output_keys = ['centroid_out', 'e_l_count_out'])
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: Localize')
+
+        localize_request = RecognitionLocalizeRequest()
+        localize_request.target_name = userdata.target_name_in
+        localize_request.sort_option = userdata.sort_option_in
+        object_centroid = Recognition_Tools.localizeObject(localize_request).centroid_point
+        userdata.centroid_out = object_centroid
+
+        if not math.isnan(object_centroid.x):
+            return 'localize_success'
+        else:
+            userdata.e_l_count_out = userdata.e_l_count_in + 1
+            return 'localize_failure'
+
+class CheckCenter(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['check_center_success', 'check_center_failure', 'action_failed'],
+                             input_keys = ['sort_option_in', 'centroid_in', 'c_l_count_in'],
+                             output_keys = ['sort_option_out', 'c_l_count_out', 'result_out'])
+
+        self.mimi_control = MimiControl()
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: CheckCenter')
+
+        object_angle = math.atan2(userdata.centroid_in.y, userdata.centroid_in.x)/math.pi*180
+        reset_option = StrInt(data='center', num=0)
+        userdata.sort_option_out = reset_option
+
+        if abs(object_angle) < 4.5:
+            userdata.result_out = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
+            return 'check_center_success'
+        elif userdata.c_l_count_in > 3:
+            return 'action_failed'
+        else:
+            if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
+            self.mimi_control.angleRotation(object_angle)
+            #rospy.sleep(4.0)
+            userdata.c_l_count_out = userdata.c_l_count_in + 1
+            return 'check_center_failure'
+
+class Move(smach.State):
+    move_count = 0
+
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['retry'],
+                             input_keys = ['c_l_count_in'],
+                             output_keys = [])
+
+        self.mimi_control = MimiControl()
+
+    def execute(self, userdata):
+        rospy.loginfo('Executing state: Move')
+
+        move_range = -0.8*(((userdata.c_l_count_in)%4)/2)+0.4
+        self.mimi_control.moveBase(move_range)
+        return 'retry'
 
 
 if __name__ == '__main__':
     rospy.init_node('recognition_action_server')
-    recognition_action_server = RecognitionActionServer()
+
+    global Recognition_Tools
+    Recognition_Tools = RecognitionTools()
+
+    sm= smach.StateMachine(outcomes = ['success', 'action_failed', 'preempted'],
+                          input_keys = ['action_goal', 'action_result'],
+                          output_keys = ['action_result'])
+
+    with sm:
+        smach.StateMachine.add('SERVER', Server(),
+                         transitions = {'start_action':'COUNT'},
+                         remapping = {'goal_in':'action_goal',
+                                      'target_name_out':'target_name',
+                                      'sort_option_out':'sort_option',
+                                      'e_l_count_out':'existence_loop_count',
+                                      'c_l_count_out':'center_loop_count',
+                                      'result_out':'action_result'})
+
+        smach.StateMachine.add('COUNT', Count(),
+                         transitions = {'count_success':'LOCALIZE',
+                                        'count_failure':'FIND',
+                                        'action_failed':'action_failed'},
+                         remapping = {'target_name_in':'target_name',
+                                      'sort_option_in':'sort_option',
+                                      'e_l_count_in':'existence_loop_count',
+                                      'sort_option_out':'sort_option',
+                                      'bbox_out':'bbox'})
+
+        smach.StateMachine.add('FIND', Find(),
+                         transitions = {'find_success':'LOCALIZE',
+                                        'find_failure':'MOVE'},
+                         remapping = {'target_name_in':'target_name',
+                                      'e_l_count_in':'existence_loop_count',
+                                      'e_l_count_out':'existence_loop_count'})
+
+        smach.StateMachine.add('LOCALIZE', Localize(),
+                         transitions = {'localize_success':'CHECK_CENTER',
+                                        'localize_failure':'MOVE'},
+                         remapping = {'target_name_in':'target_name',
+                                      'sort_option_in':'sort_option',
+                                      'bbox_in':'bbox',
+                                      'e_l_count_in':'existence_loop_count',
+                                      'centroid_out':'centroid',
+                                      'e_l_count_out':'existence_loop_count'})
+
+        smach.StateMachine.add('CHECK_CENTER', CheckCenter(),
+                         transitions = {'check_center_success':'success',
+                                        'check_center_failure':'LOCALIZE',
+                                        'action_failed':'action_failed'},
+                         remapping = {'sort_option_in':'sort_option',
+                                      'centroid_in':'centroid',
+                                      'c_l_count_in':'center_loop_count',
+                                      'sort_option_out':'sort_option',
+                                      'c_l_count_out':'center_loop_count',
+                                      'result_out':'action_result'})
+
+        smach.StateMachine.add('MOVE', Move(),
+                         transitions = {'retry':'COUNT'},
+                         remapping = {'c_l_count_in':'center_loop_count'})
+
+
+    asw = ActionServerWrapper('/recognition/action', RecognitionProcessingAction,
+                              wrapped_container = sm,
+                              succeeded_outcomes = ['success'],
+                              aborted_outcomes = ['action_failed'],
+                              preempted_outcomes = ['preempted'],
+                              goal_key='action_goal',
+                              feedback_key='action_feedback',
+                              result_key='action_result')
+    asw.run_server()
+
     rospy.spin()
