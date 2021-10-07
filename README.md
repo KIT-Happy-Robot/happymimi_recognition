@@ -9,6 +9,7 @@
     recognition_processingなどで必要となる、3次元データ処理を行うパッケージ
 
 ## Requirement
+※あまり気にしなくていいと思います
 ```
 pcl_ros
 cv_bridge
@@ -16,7 +17,16 @@ image_transport
 ```
 
 ## Build Environment
-`$ catkin build`
+```
+$ catkin build
+```
 
 ## Usage
-各パッケージに記述
+recognition_processingの立ち上げ
+```
+$ roslaunch recognition_processing recognition_processing.launch
+```
+three_dimensional_data_processingの立ち上げ
+```
+$ roslaunch three_dimensional_data_processing three_dimensional_data_processing.launch
+```
