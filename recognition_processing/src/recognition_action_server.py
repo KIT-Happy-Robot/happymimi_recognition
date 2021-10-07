@@ -145,7 +145,7 @@ class Move(smach.State):
 
         move_range = 0.4*(((userdata.move_count_in+1)%4)/2)-0.2
         self.base_control.translateDist(move_range)
-        userdata.move_count_out += 1
+        userdata.move_count_out = userdata.move_count_in + 1
         return 'retry'
 
 
