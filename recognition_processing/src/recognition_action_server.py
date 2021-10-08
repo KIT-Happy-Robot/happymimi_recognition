@@ -126,9 +126,9 @@ class CheckCenter(smach.State):
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
         else:
-            if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
+            if abs(object_angle) < 5: object_angle=object_angle/abs(object_angle)*5
             self.base_control.rotateAngle(object_angle)
-            #rospy.sleep(4.0)
+            rospy.sleep(2.0)
             userdata.c_l_count_out = userdata.c_l_count_in + 1
             return 'check_center_failure'
 
@@ -145,6 +145,7 @@ class Move(smach.State):
 
         move_range = 0.4*(((userdata.move_count_in+1)%4)/2)-0.2
         self.base_control.translateDist(move_range)
+        rospy.sleep(1.0)
         userdata.move_count_out = userdata.move_count_in + 1
         return 'retry'
 
