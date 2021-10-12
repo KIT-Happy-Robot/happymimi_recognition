@@ -12,7 +12,6 @@ find_package(catkin REQUIRED
   rospy
   std_msgs
   geometry_msgs
-  sensor_msgs
   happymimi_recognition_msgs
 )
 
