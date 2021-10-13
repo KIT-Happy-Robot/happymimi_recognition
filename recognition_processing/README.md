@@ -5,10 +5,10 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 
 ## Description
 このパッケージが提供する機能は以下の4つです。
-- Find ： 物体の探索
-- List ： 検出した物体の一覧を取得
-- Count ： 物体を数える
-- Localize ： 物体の三次元位置の推定
+- [Find](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#find) ： 物体の探索
+- [List](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#list) ： 検出した物体の一覧を取得
+- [Count](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#count) ： 物体を数える
+- [Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#localize) ： 物体の三次元位置の推定
   
 ※"物体"という言葉を使っていますが、把持可能物体(ex. cupとかbottleとか)だけでなく、人やtvモニターなどDarknet YOLOで定義したカテゴリが対象です。
 
