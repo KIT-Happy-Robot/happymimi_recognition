@@ -51,10 +51,10 @@ $ roslaunch three_dimensional_data_processing three_dimensional_data_processing.
 モジュールの呼び出し方法等は各種パッケージで記述
 
 ## Reverse Lookup
-- 物体を探したい 👉 [recognition_processingの Find モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#find)
-- YOLOで検出した物体の一覧が欲しい 👉 [recognition_processingのListモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#list)
-- 物体の数を知りたい 👉 [recognition_processingのCountモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#count)
-- 物体の三次元位置を知りたい 👉 [recognition_processingのLocalizeモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/feature/README/recognition_processing#localize)
+- 物体を探したい 👉 [recognition_processingの Find モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#find)
+- YOLOで検出した物体の一覧が欲しい 👉 [recognition_processingのListモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list)
+- 物体の数を知りたい 👉 [recognition_processingのCountモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count)
+- 物体の三次元位置を知りたい 👉 [recognition_processingのLocalizeモジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#localize)
 - (開発向け)物体の三次元位置を知りたい 👉 [three_dimensional_data_processingのPosition Estimatorモジュール]()
 - (Advanced)認識から把持の一連のタスクを行いたい 👉 [happymimi_manipulation](https://github.com/KIT-Happy-Robot/happymimi_manipulation)
 
