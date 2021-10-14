@@ -18,9 +18,9 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 入力されたデータに合わせて物体を探す。一定時間内に見つからなければFalseを返す。  
   
 **仕様**
-| Module | Communication | Name | Type | Request | Result |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| Find | Service | /recognition/find | [RecognitionFind](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionFind.srv) | string型: `target_name` | bool型: `result` |
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/find | [RecognitionFind](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionFind.srv) | string型: `target_name` | bool型: `result` |
   
 **target_nameの種類**
 | target_name | Contents |
@@ -35,9 +35,9 @@ YOLOで検出した物体の一覧を取得するモジュール
 ソートオプションを指定することで、左・中央・右を起点としてソートすることができる。
   
 **仕様**
-| Module | Communication | Name | Type | Request | Result |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| List | Service | /recognition/list | [RecognitionList](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionList.srv) | string型: `target_name`<br>string型: `sort_option` | string[]型: `object_list` |
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/list | [RecognitionList](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionList.srv) | string型: `target_name`<br>string型: `sort_option` | string[]型: `object_list` |
   
 **target_nameの種類**
 | target_name | Contents |
@@ -59,9 +59,9 @@ YOLOで検出した物体の一覧を取得するモジュール
 入力されたデータに合わせて物体の個数を数える。  
   
 **仕様**
-| Module | Communication | Name | Type | Request | Result |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| Count | Service | /recognition/count | [RecognitionCount](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionCount.srv) | string型: `target_name` | int64型: `num` |
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/count | [RecognitionCount](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionCount.srv) | string型: `target_name` | int64型: `num` |
   
 **target_nameの種類**
 | target_name | Contents |
@@ -75,9 +75,9 @@ YOLOで検出した物体の一覧を取得するモジュール
 ソートオプションを指定することで、左・中央・右を起点とした順番に物体を並び替え、取得したい物体を指定することができる。
   
 **仕様**
-| Module | Communication | Name | Type | Request | Result |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| Localize | Service | /recognition/localize | [RecognitionLocalize](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionLocalize.srv) | string型: `target_name`<br>[happymimi_msgs/StrInt型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/msg/StrInt.msg): `sort_option` | geometry_msgs/Point型: `centroid_point` |
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/localize | [RecognitionLocalize](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionLocalize.srv) | string型: `target_name`<br>[happymimi_msgs/StrInt型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/msg/StrInt.msg): `sort_option` | geometry_msgs/Point型: `centroid_point` |
   
 **target_nameの種類**
 | target_name | Contents |
