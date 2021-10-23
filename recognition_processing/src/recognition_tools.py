@@ -1,46 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
-import time
-import numpy
 import rospy
 import rosparam
 import rosgraph
+import roslib.packages
+import os
+import sys
+import time
+import numpy
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
-# -- Custom Message --
 from happymimi_recognition_msgs.srv import (RecognitionList, RecognitionListRequest, RecognitionListResponse,
                                             RecognitionCount, RecognitionCountRequest, RecognitionCountResponse,
                                             RecognitionFind, RecognitionFindRequest, RecognitionFindResponse,
                                             RecognitionLocalize, RecognitionLocalizeRequest, RecognitionLocalizeResponse,
                                             PositionEstimator, PositionEstimatorRequest)
 
-class MimiControl(object):
-    def __init__(self):
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=1)
 
-        self.twist_value = Twist()
-
-    def angleRotation(self, degree):
-        while degree > 180:
-            degree = degree - 360
-        while degree < -180:
-            degree = degree + 360
-        angular_speed = 50.0 #[deg/s]
-        target_time = abs(1.76899*(degree /angular_speed))  #[s]
-        if degree >= 0:
-            self.twist_value.angular.z = (angular_speed * 3.14159263 / 180.0) #rad
-        elif degree < 0:
-            self.twist_value.angular.z = -(angular_speed * 3.14159263 / 180.0) #rad
-        rate = rospy.Rate(500)
-        start_time = time.time()
-        end_time = time.time()
-        while end_time - start_time <= target_time:
-            self.cmd_vel_pub.publish(self.twist_value)
-            end_time = time.time()
-            rate.sleep()
-        self.twist_value.angular.z = 0.0
-        self.cmd_vel_pub.publish(self.twist_value)
+teleop_path = roslib.packages.get_pkg_dir('happymimi_teleop')
+sys.path.insert(0, os.path.join(teleop_path, 'src/'))
+from base_control import BaseControl
 
 
 class CallDetector(object):
@@ -136,7 +116,6 @@ class RecognitionTools(object):
         else:
             for i in coordinate_list:
                 response_list.object_list.append(i[0])
-
         return response_list
 
     def countObject(self, request, bb=None):
@@ -157,13 +136,12 @@ class RecognitionTools(object):
         else:
             object_count = bbox_list.count(object_name)
         response_count.object_num = object_count
-
         return response_count
 
     def findObject(self, request):
         rospy.loginfo('module type : Find')
 
-        mimi_control = MimiControl()
+        base_control = BaseControl()
 
         response_flg = RecognitionFindResponse()
         object_name = request.target_name
@@ -175,7 +153,8 @@ class RecognitionTools(object):
             loop_count += 1
 
             rotation_angle = 45 - (((loop_count)%4)/2) * 90
-            mimi_control.angleRotation(rotation_angle)
+            #base_control.rotateAngle(rotation_angle)
+            base_control.rotateAngle(rotation_angle/3)
             rospy.sleep(3.0)
 
             bbox_list = self.createBboxList(RecognitionTools.bbox)
@@ -186,7 +165,6 @@ class RecognitionTools(object):
             else:
                 find_flg = object_name in bbox_list
         response_flg.result = find_flg
-
         return response_flg
 
     def localizeObject(self, request, bb=None):
@@ -225,7 +203,6 @@ class RecognitionTools(object):
         rospy.sleep(0.5)
         Detector.detectorService(center_x, center_y)
         response_centroid.centroid_point = Detector.object_centroid
-
         return response_centroid
 
 

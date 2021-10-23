@@ -1,72 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*
 
+import rospy
+import rosparam
+import roslib.packages
+import os
+import sys
 import time
 import math
 import numpy
-import rospy
-import rosparam
 import actionlib
 import smach
 from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 from happymimi_msgs.msg import StrInt
-# -- Action msg --
 from happymimi_recognition_msgs.msg import RecognitionProcessingAction, RecognitionProcessingResult
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
-# -- Class import --
+
+
 from recognition_tools import RecognitionTools
-
-
-class MimiControl(object):
-    def __init__(self):
-
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel_mux/input/teleop',Twist,queue_size=1)
-        self.twist_value = Twist()
-
-    def angleRotation(self, degree):
-        while degree > 180:
-            degree = degree - 360
-        while degree < -180:
-            degree = degree + 360
-        angular_speed = 50.0 #[deg/s]
-        target_time = abs(1.76899*(degree /angular_speed))  #[s]
-        if degree >= 0:
-            self.twist_value.angular.z = (angular_speed * 3.14159263 / 180.0) #rad
-        elif degree < 0:
-            self.twist_value.angular.z = -(angular_speed * 3.14159263 / 180.0) #rad
-        rate = rospy.Rate(500)
-        start_time = time.time()
-        end_time = time.time()
-        while end_time - start_time <= target_time:
-            self.cmd_vel_pub.publish(self.twist_value)
-            end_time = time.time()
-            rate.sleep()
-        self.twist_value.angular.z = 0.0
-        self.cmd_vel_pub.publish(self.twist_value)
-
-    def moveBase(self, rad_speed):
-        for speed_i in range(10):
-            self.twist_value.linear.x = rad_speed*0.05*speed_i
-            self.twist_value.angular.z = 0
-            self.cmd_vel_pub.publish(self.twist_value)
-            rospy.sleep(0.1)
-        for speed_i in range(10):
-            self.twist_value.linear.x = rad_speed*0.05*(10-speed_i)
-            self.twist_value.angular.z = 0
-            self.cmd_vel_pub.publish(self.twist_value)
-            rospy.sleep(0.1)
-        self.twist_value.linear.x = 0
-        self.twist_value.angular.z = 0
-        self.cmd_vel_pub.publish(self.twist_value)
+teleop_path = roslib.packages.get_pkg_dir('happymimi_teleop')
+sys.path.insert(0, os.path.join(teleop_path, 'src/'))
+from base_control import BaseControl
 
 
 class Server(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['start_action'],
                              input_keys = ['goal_in'],
-                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out', 'result_out'])
+                             output_keys = ['target_name_out', 'sort_option_out', 'e_l_count_out', 'c_l_count_out', 'move_count_out', 'result_out'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Server')
@@ -75,6 +38,7 @@ class Server(smach.State):
         userdata.sort_option_out = userdata.goal_in.sort_option
         userdata.e_l_count_out = 0
         userdata.c_l_count_out = 0
+        userdata.move_count_out = 0
         userdata.result_out = RecognitionProcessingResult(result_flg=False, centroid_point=Point())
         return 'start_action'
 
@@ -147,7 +111,7 @@ class CheckCenter(smach.State):
                              input_keys = ['sort_option_in', 'centroid_in', 'c_l_count_in'],
                              output_keys = ['sort_option_out', 'c_l_count_out', 'result_out'])
 
-        self.mimi_control = MimiControl()
+        self.base_control = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: CheckCenter')
@@ -162,27 +126,27 @@ class CheckCenter(smach.State):
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
         else:
-            if abs(object_angle) < 10: object_angle=object_angle/abs(object_angle)*10
-            self.mimi_control.angleRotation(object_angle)
-            #rospy.sleep(4.0)
+            if abs(object_angle) < 5: object_angle=object_angle/abs(object_angle)*5
+            self.base_control.rotateAngle(object_angle)
+            rospy.sleep(2.0)
             userdata.c_l_count_out = userdata.c_l_count_in + 1
             return 'check_center_failure'
 
 class Move(smach.State):
-    move_count = 0
-
     def __init__(self):
         smach.State.__init__(self, outcomes = ['retry'],
-                             input_keys = ['c_l_count_in'],
-                             output_keys = [])
+                             input_keys = ['move_count_in'],
+                             output_keys = ['move_count_out'])
 
-        self.mimi_control = MimiControl()
+        self.base_control = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: Move')
 
-        move_range = -0.8*(((userdata.c_l_count_in)%4)/2)+0.4
-        self.mimi_control.moveBase(move_range)
+        move_range = 0.4*(((userdata.move_count_in+1)%4)/2)-0.2
+        self.base_control.translateDist(move_range)
+        rospy.sleep(1.0)
+        userdata.move_count_out = userdata.move_count_in + 1
         return 'retry'
 
 
@@ -204,6 +168,7 @@ if __name__ == '__main__':
                                       'sort_option_out':'sort_option',
                                       'e_l_count_out':'existence_loop_count',
                                       'c_l_count_out':'center_loop_count',
+                                      'move_count_out':'move_count',
                                       'result_out':'action_result'})
 
         smach.StateMachine.add('COUNT', Count(),
@@ -246,7 +211,8 @@ if __name__ == '__main__':
 
         smach.StateMachine.add('MOVE', Move(),
                          transitions = {'retry':'COUNT'},
-                         remapping = {'c_l_count_in':'center_loop_count'})
+                         remapping = {'move_count_in':'move_count',
+                                      'move_count_out':'move_count'})
 
 
     asw = ActionServerWrapper('/recognition/action', RecognitionProcessingAction,

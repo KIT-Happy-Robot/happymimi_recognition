@@ -88,7 +88,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   }
 
   float distance = cv_image.at<u_int16_t>(req.center_x, req.center_y);
-  ROS_INFO("%f", distance);
+  ROS_INFO("distance: %f", distance);
 
   float theta_y, theta_z, centroid_x, centroid_y, centroid_z;
 
@@ -99,7 +99,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   centroid_x = distance;
   centroid_y = -1 * distance * tan(theta_y);
   centroid_z = distance * tan(theta_z);
-  ROS_INFO("%f, %f", centroid_x, centroid_z);
+  ROS_INFO("x: %f, y: %f", centroid_x, centroid_z);
 
   //角度：head_angleに合わせて調整
   centroid_x = (centroid_x * cos(M_PI*head_angle/180)) + (centroid_z * sin(M_PI*head_angle/180));
