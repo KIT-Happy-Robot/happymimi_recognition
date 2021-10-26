@@ -51,6 +51,7 @@ class Count(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: Count')
 
+        rospy.sleep(1.0)
         bbox = Recognition_Tools.bbox
         userdata.bbox_out = bbox
         object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
@@ -120,13 +121,13 @@ class CheckCenter(smach.State):
         reset_option = StrInt(data='center', num=0)
         userdata.sort_option_out = reset_option
 
-        if abs(object_angle) < 4.5:
+        if abs(object_angle) < 3.5:
             userdata.result_out = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
             return 'check_center_success'
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
         else:
-            if abs(object_angle) < 5: object_angle=object_angle/abs(object_angle)*5
+            if abs(object_angle) < 3.5: object_angle=object_angle/abs(object_angle)*3.5
             self.base_control.rotateAngle(object_angle)
             rospy.sleep(2.0)
             userdata.c_l_count_out = userdata.c_l_count_in + 1
