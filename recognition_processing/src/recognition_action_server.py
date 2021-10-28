@@ -13,11 +13,11 @@ import actionlib
 import smach
 from smach_ros import ActionServerWrapper
 from geometry_msgs.msg import Twist, Point
+
 from darknet_ros_msgs.msg import BoundingBoxes
 from happymimi_msgs.msg import StrInt
 from happymimi_recognition_msgs.msg import RecognitionProcessingAction, RecognitionProcessingResult
 from happymimi_recognition_msgs.srv import RecognitionCountRequest, RecognitionFindRequest, RecognitionLocalizeRequest
-
 
 from recognition_tools import RecognitionTools
 teleop_path = roslib.packages.get_pkg_dir('happymimi_teleop')
