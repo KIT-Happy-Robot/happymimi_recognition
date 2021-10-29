@@ -152,8 +152,8 @@ class RecognitionTools(object):
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
 
-            rotation_angle = float(45 - (((loop_count)%4)/2) * 90)
-            base_control.rotateAngle(rotation_angle, 0.3)
+            rotation_angle = 30 - (((loop_count)%4)/2) * 60
+            base_control.rotateAngle(rotation_angle, 0.5)
             rospy.sleep(3.0)
 
             bbox_list = self.createBboxList(RecognitionTools.bbox)

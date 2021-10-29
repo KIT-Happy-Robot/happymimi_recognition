@@ -121,13 +121,13 @@ class CheckCenter(smach.State):
         reset_option = StrInt(data='center', num=0)
         userdata.sort_option_out = reset_option
 
-        if abs(object_angle) < 3.5:
+        if abs(object_angle) < 1:
             userdata.result_out = RecognitionProcessingResult(result_flg=True, centroid_point=userdata.centroid_in)
             return 'check_center_success'
         elif userdata.c_l_count_in > 3:
             return 'action_failed'
         else:
-            if abs(object_angle) < 3.5: object_angle=object_angle/abs(object_angle)*3.5
+            #if abs(object_angle) < 3.5: object_angle=object_angle/abs(object_angle)*3.5
             self.base_control.rotateAngle(float(object_angle))
             rospy.sleep(2.0)
             userdata.c_l_count_out = userdata.c_l_count_in + 1
