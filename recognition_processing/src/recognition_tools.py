@@ -109,11 +109,33 @@ class RecognitionTools(object):
                 i[1][1] += (self.image_width)/2
         elif sort_option == 'right':
             coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
+        elif sort_option == 'front':
+            list_request = RecognitionListRequest()
+            list_request.target_name = object_name
+            list_request.sort_option = 'left'
+            left_list = self.listObject(request=list_request, bb=bb).object_list
+
+            localize_request = RecognitionLocalizeRequest()
+            localize_request.sort_option.data = 'left'
+            depth_list = []
+            for i, x in enumerate(left_list):
+                localize_request.target_name = x
+                localize_request.sort_option.num = i
+                centroid = self.localizeObject(localize_request).centroid_point
+                depth_list.append([x, centroid.x])
+            depth_list.sort(key=lambda x: x[1][1])
 
         # 内部呼び出しかserverの呼び出しか
         if internal_call:
-            response_list.object_list = coordinate_list
+            try:
+                response_list.object_list = coordinate_list
+            except NameError:
+                pass
         else:
+            try:
+                coordinate_list = depth_list
+            except NameError:
+                pass
             for i in coordinate_list:
                 response_list.object_list.append(i[0])
         return response_list
