@@ -100,7 +100,6 @@ class RecognitionTools(object):
 
         # ソート
         if sort_option == 'left':
-            print coordinate_list
             coordinate_list.sort(key=lambda x: x[1][1])
         elif sort_option == 'center':
             for i in coordinate_list:
@@ -125,7 +124,7 @@ class RecognitionTools(object):
                 for i in range(loop_count):
                     localize_req.sort_option.num = i
                     centroid = self.localizeObject(localize_req).centroid_point
-                    depth_list.append([x, centroid.x])
+                    depth_list.append([name, centroid.x])
             depth_list.sort(key=lambda x: x[1])
 
         # 内部呼び出しかserverの呼び出しか
