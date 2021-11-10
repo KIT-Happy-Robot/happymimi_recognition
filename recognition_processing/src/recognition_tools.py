@@ -31,10 +31,10 @@ class CallDetector(object):
 
     def detectorService(self, center_x, center_y):
         rospy.wait_for_service('/detect/depth')
-        request_position_estimator = PositionEstimatorRequest()
-        request_position_estimator.center_x = center_x
-        request_position_estimator.center_y = center_y
-        res = self.detect_depth(request_position_estimator)
+        position_estimator_req = PositionEstimatorRequest()
+        position_estimator_req.center_x = center_x
+        position_estimator_req.center_y = center_y
+        res = self.detect_depth(position_estimator_req)
         self.object_centroid = res.centroid_point
 
 
@@ -111,20 +111,21 @@ class RecognitionTools(object):
         elif sort_option == 'right':
             coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
         elif sort_option == 'front':
-            list_request = RecognitionListRequest()
-            list_request.target_name = object_name
-            list_request.sort_option = 'left'
-            left_list = self.listObject(request=list_request, bb=bb).object_list
+            list_req = RecognitionListRequest()
+            list_req.target_name = object_name
+            name_list = list(set(self.listObject(request=list_req, bb=bb).object_list))
 
-            localize_request = RecognitionLocalizeRequest()
-            localize_request.sort_option.data = 'left'
+            localize_req = RecognitionLocalizeRequest()
+            localize_req.sort_option.data = 'left'
             depth_list = []
-            for i, x in enumerate(left_list):
-                localize_request.target_name = x
-                localize_request.sort_option.num = i
-                centroid = self.localizeObject(localize_request).centroid_point
-                depth_list.append([x, centroid.x])
-            print depth_list
+
+            for name in name_list:
+                loop_count = self.countObject(RecognitionCountRequest(name)).object_num
+                localize_req.target_name = name
+                for i in range(loop_count):
+                    localize_req.sort_option.num = i
+                    centroid = self.localizeObject(localize_req).centroid_point
+                    depth_list.append([x, centroid.x])
             depth_list.sort(key=lambda x: x[1])
 
         # 内部呼び出しかserverの呼び出しか
@@ -213,10 +214,10 @@ class RecognitionTools(object):
             return response_centroid
 
         # リストの取得
-        list_request = RecognitionListRequest()
-        list_request.target_name = object_name
-        list_request.sort_option = sort_option.data
-        object_list = self.listObject(request=list_request, bb=RecognitionTools.bbox, internal_call=True).object_list
+        list_req = RecognitionListRequest()
+        list_req.target_name = object_name
+        list_req.sort_option = sort_option.data
+        object_list = self.listObject(request=list_req, bb=RecognitionTools.bbox, internal_call=True).object_list
         try:
             center_x, center_y = object_list[sort_option.num][1]
         except IndexError:
