@@ -119,12 +119,12 @@ class RecognitionTools(object):
             depth_list = []
 
             for name in name_list:
-                loop_count = self.countObject(RecognitionCountRequest(name)).object_num
+                loop_count = self.countObject(RecognitionCountRequest(name), bb=bb).object_num
                 localize_req.target_name = name
                 for i in range(loop_count):
                     localize_req.sort_option.num = i
-                    centroid = self.localizeObject(localize_req).centroid_point
-                    depth_list.append([name, centroid.x])
+                    centroid = self.localizeObject(localize_req, bb=bb).centroid_point
+                    depth_list.append([name, centroid.x, ])
             depth_list.sort(key=lambda x: x[1])
 
         # 内部呼び出しかserverの呼び出しか
@@ -206,7 +206,7 @@ class RecognitionTools(object):
             bb = RecognitionTools.bbox
         bbox_list = self.createBboxList(bb)
 
-        exist_flg = bool(self.countObject(RecognitionCountRequest(target_name=object_name)).object_num)
+        exist_flg = bool(self.countObject(RecognitionCountRequest(object_name), bb=bb).object_num)
 
         # 対象の物体が存在しない場合
         if not exist_flg:
