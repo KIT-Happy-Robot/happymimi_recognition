@@ -15,6 +15,7 @@ from happymimi_recognition_msgs.srv import (RecognitionList, RecognitionListRequ
                                             RecognitionCount, RecognitionCountRequest, RecognitionCountResponse,
                                             RecognitionFind, RecognitionFindRequest, RecognitionFindResponse,
                                             RecognitionLocalize, RecognitionLocalizeRequest, RecognitionLocalizeResponse,
+                                            MultipleLocalize, MultipleLocalizeRequest, MultipleLocalizeResponse,
                                             PositionEstimator, PositionEstimatorRequest)
 
 
@@ -47,6 +48,7 @@ class RecognitionTools(object):
         rospy.Service('/recognition/find',RecognitionFind,self.findObject)
         rospy.Service('/recognition/count',RecognitionCount,self.countObject)
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
+        rospy.Service('/recognition/multiple_localize',MultipleLocalize,self.multipleLocalize)
 
         self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
         self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
@@ -110,9 +112,7 @@ class RecognitionTools(object):
         elif sort_option == 'right':
             coordinate_list.sort(key=lambda x: x[1][1], reverse=True)
         elif sort_option == 'front':
-            list_req = RecognitionListRequest()
-            list_req.target_name = object_name
-            name_list = list(set(self.listObject(request=list_req, bb=bb).object_list))
+            name_list = set([row[0] for row in coordinate_list])
 
             localize_req = RecognitionLocalizeRequest()
             localize_req.sort_option.data = 'left'
@@ -124,22 +124,17 @@ class RecognitionTools(object):
                 for i in range(loop_count):
                     localize_req.sort_option.num = i
                     centroid = self.localizeObject(localize_req, bb=bb).point
-                    depth_list.append([name, centroid.x, ])
-            depth_list.sort(key=lambda x: x[1])
+                    depth_list.append([name, centroid])
+            depth_list.sort(key=lambda x: x[1].x)
 
-        # 内部呼び出しかserverの呼び出しか
-        if internal_call:
-            try:
-                response_list.object_list = coordinate_list
-            except NameError:
-                pass
-        else:
-            try:
-                coordinate_list = depth_list
-            except NameError:
-                pass
-            for i in coordinate_list:
-                response_list.object_list.append(i[0])
+        try:
+            response_list.object_list = depth_list
+        except NameError:
+            response_list.object_list = coordinate_list
+
+        # serverの呼び出し
+        if not internal_call:
+            response_list.object_list = [row[0] for row in response_list.object_list]
         return response_list
 
     def countObject(self, request, bb=None):
@@ -226,6 +221,25 @@ class RecognitionTools(object):
         rospy.sleep(0.5)
         Detector.detectorService(center_x, center_y)
         response_centroid.point = Detector.object_centroid
+        return response_centroid
+
+    def multipleLocalize(self, request, bb=None):
+        rospy.loginfo('module type : AddvancedLocalize')
+
+        response_centroid = MultipleLocalizeResponse()
+
+        object_name = request.target_name
+        if bb is None:
+            bb = RecognitionTools.bbox
+        bbox_list = self.createBboxList(bb)
+
+        # リストの取得
+        list_req = RecognitionListRequest()
+        list_req.target_name = object_name
+        list_req.sort_option = 'front'
+        object_list = self.listObject(request=list_req, bb=RecognitionTools.bbox, internal_call=True).object_list
+
+        response_centroid.points = [row[1] for row in object_list]
         return response_centroid
 
 
