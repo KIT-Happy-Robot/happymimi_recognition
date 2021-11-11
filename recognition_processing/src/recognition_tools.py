@@ -35,7 +35,7 @@ class CallDetector(object):
         position_estimator_req.center_x = center_x
         position_estimator_req.center_y = center_y
         res = self.detect_depth(position_estimator_req)
-        self.object_centroid = res.centroid_point
+        self.object_centroid = res.point
 
 
 class RecognitionTools(object):
@@ -119,11 +119,11 @@ class RecognitionTools(object):
             depth_list = []
 
             for name in name_list:
-                loop_count = self.countObject(RecognitionCountRequest(name), bb=bb).object_num
+                loop_count = self.countObject(RecognitionCountRequest(name), bb=bb).num
                 localize_req.target_name = name
                 for i in range(loop_count):
                     localize_req.sort_option.num = i
-                    centroid = self.localizeObject(localize_req, bb=bb).centroid_point
+                    centroid = self.localizeObject(localize_req, bb=bb).point
                     depth_list.append([name, centroid.x, ])
             depth_list.sort(key=lambda x: x[1])
 
@@ -159,7 +159,7 @@ class RecognitionTools(object):
                     object_count += 1
         else:
             object_count = bbox_list.count(object_name)
-        response_count.object_num = object_count
+        response_count.num = object_count
         return response_count
 
     def findObject(self, request):
@@ -171,7 +171,7 @@ class RecognitionTools(object):
         object_name = request.target_name
         loop_count = 0
 
-        find_flg = bool(self.countObject(RecognitionCountRequest(object_name)).object_num)
+        find_flg = bool(self.countObject(RecognitionCountRequest(object_name)).num)
 
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
@@ -196,9 +196,9 @@ class RecognitionTools(object):
         Detector = CallDetector()
 
         response_centroid = RecognitionLocalizeResponse()
-        response_centroid.centroid_point.x = numpy.nan
-        response_centroid.centroid_point.y = numpy.nan
-        response_centroid.centroid_point.z = numpy.nan
+        response_centroid.point.x = numpy.nan
+        response_centroid.point.y = numpy.nan
+        response_centroid.point.z = numpy.nan
 
         object_name = request.target_name
         sort_option = request.sort_option
@@ -206,7 +206,7 @@ class RecognitionTools(object):
             bb = RecognitionTools.bbox
         bbox_list = self.createBboxList(bb)
 
-        exist_flg = bool(self.countObject(RecognitionCountRequest(object_name), bb=bb).object_num)
+        exist_flg = bool(self.countObject(RecognitionCountRequest(object_name), bb=bb).num)
 
         # 対象の物体が存在しない場合
         if not exist_flg:
@@ -225,7 +225,7 @@ class RecognitionTools(object):
         # 三次元位置の推定
         rospy.sleep(0.5)
         Detector.detectorService(center_x, center_y)
-        response_centroid.centroid_point = Detector.object_centroid
+        response_centroid.point = Detector.object_centroid
         return response_centroid
 
 

@@ -81,9 +81,9 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   bool convert_result = convertImage(current_depth_image, cv_image);
 
   if(!convert_result){
-	res.centroid_point.x = std::numeric_limits<float>::quiet_NaN();
-	res.centroid_point.y = std::numeric_limits<float>::quiet_NaN();
-	res.centroid_point.z = std::numeric_limits<float>::quiet_NaN();
+	res.point.x = std::numeric_limits<float>::quiet_NaN();
+	res.point.y = std::numeric_limits<float>::quiet_NaN();
+	res.point.z = std::numeric_limits<float>::quiet_NaN();
 	return false;
   }
 
@@ -116,10 +116,10 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   float realsense_height = neck_height + (head_height/100);
   ROS_INFO("%f", realsense_height);
 
-  res.centroid_point.x = centroid_x / 1000;
-  res.centroid_point.y = centroid_y / 1000;
-  res.centroid_point.z = centroid_z / 1000 + realsense_height;
-  ROS_INFO("x:%f, y:%f, z:%f", res.centroid_point.x, res.centroid_point.y, res.centroid_point.z);
+  res.point.x = centroid_x / 1000;
+  res.point.y = centroid_y / 1000;
+  res.point.z = centroid_z / 1000 + realsense_height;
+  ROS_INFO("x:%f, y:%f, z:%f", res.point.x, res.point.y, res.point.z);
 
   return true;
 }
