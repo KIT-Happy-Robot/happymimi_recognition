@@ -25,6 +25,7 @@ add_service_files(
   RecognitionFind.srv
   RecognitionCount.srv
   RecognitionLocalize.srv
+  MultipleLocalize.srv
   PositionEstimator.srv
 )
 
