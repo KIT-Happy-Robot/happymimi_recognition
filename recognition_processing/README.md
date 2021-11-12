@@ -9,6 +9,7 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 - [List](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list) ： 検出した物体の一覧を取得
 - [Count](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count) ： 物体を数える
 - [Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#localize) ： 物体の三次元位置の推定
+- [Multiple Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#MultipleLocalize) ： 複数物体の三次元位置の推定
   
 ※"物体"という言葉を使っていますが、把持可能物体(ex. cupとかbottleとか)だけでなく、人やtvモニターなどDarknet YOLOで定義したカテゴリが対象です。
 
@@ -77,7 +78,7 @@ YOLOで検出した物体の一覧を取得するモジュール
 **仕様**
 | Communication | Name | Type | Request | Result |
 | :---: | :---: | :---: | :---: | :---: |
-| Service | /recognition/localize | [RecognitionLocalize](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionLocalize.srv) | string型: `target_name`<br>[happymimi_msgs/StrInt型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/msg/StrInt.msg): `sort_option` | geometry_msgs/Point型: `centroid_point` |
+| Service | /recognition/localize | [RecognitionLocalize](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/RecognitionLocalize.srv) | string型: `target_name`<br>[happymimi_msgs/StrInt型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/msg/StrInt.msg): `sort_option` | geometry_msgs/Point型: `point` |
   
 **target_nameの種類**
 | target_name | Contents |
@@ -96,4 +97,19 @@ YOLOで検出した物体の一覧を取得するモジュール
 | :---: | --- |
 | 数値 | ソートしたリストを元に、指定した数値番目の物体の三次元位置を取得 |
 
+---
+### MultipleLocalize
+指定した名前に該当するすべての物体の三次元位置をリストで返すモジュール  
+  
+**仕様**
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/multiple_localize | [MultipleLocalize](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/happymimi_recognition_msgs/srv/MultipleLocalize.srv) | string型: `target_name` | geometry_msgs/Point[]型: `points` |
+  
+**target_nameの種類**
+| target_name | Contents |
+| :---: | :--- |
+| 特定の名前(ex. personとかcupとか) | 指定した名前に該当するすべての物体の三次元位置を返す |
+| any | すべての把持可能物体の三次元位置を返す |
+  
 ---
