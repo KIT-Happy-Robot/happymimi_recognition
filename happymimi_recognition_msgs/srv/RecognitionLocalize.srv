@@ -1,4 +1,4 @@
 string target_name
 happymimi_msgs/StrInt sort_option
 ---
-geometry_msgs/Point centroid_point
+geometry_msgs/Point point
