@@ -55,6 +55,7 @@ $ roslaunch three_dimensional_data_processing three_dimensional_data_processing.
 - YOLOで検出した物体の一覧が欲しい 👉 [recognition_processingの List モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list)
 - 物体の数を知りたい 👉 [recognition_processingの Count モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count)
 - 物体の三次元位置を知りたい 👉 [recognition_processingの Localize モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#localize)
+- 複数の三次元位置を知りたい 👉 [recognition_processingの MultipleLocalize モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#MultipleLocalize)
 - (開発向け)物体の三次元位置を知りたい 👉 [three_dimensional_data_processingの Position Estimator モジュール]()
 - (Advanced)認識から把持の一連のタスクを行いたい 👉 [happymimi_manipulation](https://github.com/KIT-Happy-Robot/happymimi_manipulation)
 
