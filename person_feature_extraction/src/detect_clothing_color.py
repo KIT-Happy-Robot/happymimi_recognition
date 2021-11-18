@@ -4,11 +4,11 @@
 import rospy
 from ros_openpose.msg import AltMarkerArray, Frame
 from std_msgs.msg import Float64
-from happymimi_msgs.srv import SetStr
+from happymimi_msgs.srv import SetStr, SetStrResponce
 
 class DetectClothingColor(object):
     def __init__(self):
-        rospy.Service('/height_estimation', SetFloat, self.main)
+        rospy.Service('/height_estimation', SetStr, self.main)
         #rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
@@ -18,11 +18,12 @@ class DetectClothingColor(object):
         self.pose_res = res
 
     def main(self, _):
+        color = SetStrResponce()
         self.head_pub.publish(-25.0)
         rospy.sleep(1.0)
 
         pose = self.pose_res
-        if len(pose.persons)==0: return ''
+        if len(pose.persons)==0: return color
 
         '''
         center_x = pose.persons[0].bodyParts[0].pixel.x
@@ -37,7 +38,7 @@ class DetectClothingColor(object):
                     return ''
         '''
 
-        color = 'Black'
+        color.result = 'black'
         return color
 
 if __name__ == '__main__':
