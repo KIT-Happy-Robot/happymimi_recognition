@@ -22,3 +22,14 @@
 推定に失敗した場合は`-1`を返します。  
   
 ---  
+### Detect_Cloth_Color
+服の色を検出するモジュール  
+  
+**仕様**
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /person_feature/cloth_color | [happymimi_msgs/SetStr型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/srv/SetStr.srv) |  | str型: `result` |
+  
+推定に失敗した場合は`''`を返します。  
+  
+---  
