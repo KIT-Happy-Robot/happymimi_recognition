@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*
 
 import rospy
-#from ros_openpose.msg import AltMarkerArray, Frame
+from ros_openpose.msg import AltMarkerArray, Frame
 from std_msgs.msg import Float64
 from happymimi_msgs.srv import SetFloat
 from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorRequest
@@ -10,11 +10,11 @@ from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorR
 class HeightEstimation(object):
     def __init__(self):
         rospy.Service('/person_feature/height_estimation', SetFloat, self.main)
-        #rospy.Subscriber('/frame', Frame, self.openPoseCB)
+        rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.position_estimate = rospy.ServiceProxy('/detect/depth', PositionEstimator)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
-        #self.pose_res = Frame()
+        self.pose_res = Frame()
 
     def openPoseCB(self, res):
         self.pose_res = res
