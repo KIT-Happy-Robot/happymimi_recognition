@@ -1,4 +1,4 @@
-# recognition_processing
+# person_feature_extraction
 ## Overview
 認識処理系を利用した人の特徴を取得するパッケージ  
 
