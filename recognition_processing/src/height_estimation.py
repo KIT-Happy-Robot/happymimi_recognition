@@ -20,13 +20,13 @@ class HeightEstimation(object):
 
     def main(self):
         pose = self.pose_res
-        if len(pose.persons)==0: return 170.0
+        if len(pose.persons)==0: return -1.0
 
         print pose.persons[0].bodyParts[0].pixel
         center_x = pose.persons[0].bodyParts[0].pixel.x
         center_y = pose.persons[0].bodyParts[0].pixel.y
         print center_x, center_y
-        if center_x==0 and center_y==0: return 170.0
+        if center_x==0 and center_y==0: return -1.0
 
         rospy.wait_for_service('/detect/depth')
         p_e_req = PositionEstimatorRequest()
