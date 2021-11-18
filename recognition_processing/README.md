@@ -9,7 +9,7 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 - [List](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list) ： 検出した物体の一覧を取得
 - [Count](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count) ： 物体を数える
 - [Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#localize) ： 物体の三次元位置の推定
-- [Multiple_Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#Multiple_Localize) ： 複数物体の三次元位置の推定
+- [Multiple_Localize](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#multiple_localize) ： 複数物体の三次元位置の推定
   
 ※"物体"という言葉を使っていますが、把持可能物体(ex. cupとかbottleとか)だけでなく、人やtvモニターなどDarknet YOLOで定義したカテゴリが対象です。
 
