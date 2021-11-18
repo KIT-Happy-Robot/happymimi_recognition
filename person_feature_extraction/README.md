@@ -17,8 +17,8 @@
 **仕様**
 | Communication | Name | Type | Request | Result |
 | :---: | :---: | :---: | :---: | :---: |
-| Service | /person_feature/height | [happymimi_msgs/SetFloat型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/msg/SetFloat.msg) | float64型: `data` |
+| Service | /person_feature/height | [happymimi_msgs/SetFloat型](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/srv/SetFloat.srv) |  | float64型: `data` |
   
-推定に失敗した場合は-1.0を返します。  
+推定に失敗した場合は`-1.0`を返します。  
   
 ---  
