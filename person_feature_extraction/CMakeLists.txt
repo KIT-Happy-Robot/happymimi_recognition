@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(recognition_processing)
+project(person_feature_extraction)
 
 find_package(catkin REQUIRED
   roscpp
@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES recognition_processing
+#  LIBRARIES person_feature_extraction
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
