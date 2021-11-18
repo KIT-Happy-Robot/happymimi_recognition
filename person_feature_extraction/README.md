@@ -5,8 +5,8 @@
 
 ## Description
 このパッケージが提供する機能は以下の2つです。
-- [Height_Estimation](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/human_feature_extraction#height_estimation) ： 身長の推定
-- [Detect Clothing Color](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/human_feature_extraction#detect_clothing_color) ： 服の色の検出
+- [Height_Estimation](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/person_feature_extraction#height_estimation) ： 身長の推定
+- [Detect Clothing Color](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/person_feature_extraction#detect_clothing_color) ： 服の色の検出
   
 
 ## Usage
