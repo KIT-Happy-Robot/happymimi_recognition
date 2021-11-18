@@ -30,12 +30,12 @@ class HeightEstimation(object):
 
         rospy.wait_for_service('/detect/depth')
         p_e_req = PositionEstimatorRequest()
-        p_e_req.center_x = int(center_x)
-        p_e_req.center_y = int(center_y)
+        p_e_req.center_x = int(center_y)
+        p_e_req.center_y = int(center_x)
         p_e_res = self.position_estimate(p_e_req).point
 
         print 'z:', p_e_res.z
-        height = p_e_res.z + 30
+        height = p_e_res.z*100 + 20
         return height
 
 if __name__ == '__main__':
