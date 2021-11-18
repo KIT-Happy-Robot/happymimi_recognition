@@ -14,6 +14,14 @@
     - 物体の三次元位置を推定する
     - etc..
 
+- ### [person_feature_extraction](./person_feature_extraction)
+    > 認識処理系を利用した人の特徴を取得するパッケージ  
+
+    このパッケージでできること
+    - 身長を推定する
+    - 服の色を取得する
+    - etc..
+
 - ### [three_dimensional_data_processing](./three_dimensional_data_processing)
     > recognition_processingなどで必要となる、3次元データ処理を行うパッケージ  
     
@@ -46,6 +54,7 @@ $ roslaunch recognition_processing recognition_processing.launch
 ```
 $ roslaunch three_dimensional_data_processing three_dimensional_data_processing.launch
 ```
+※person_feature_extractionは別で立ち上げる必要があります。  
 
 ## Usage
 モジュールの呼び出し方法等は各種パッケージで記述
@@ -56,6 +65,7 @@ $ roslaunch three_dimensional_data_processing three_dimensional_data_processing.
 - 物体の数を知りたい 👉 [recognition_processingの Count モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count)
 - 物体の三次元位置を知りたい 👉 [recognition_processingの Localize モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#localize)
 - 複数の三次元位置を知りたい 👉 [recognition_processingの MultipleLocalize モジュール](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#MultipleLocalize)
+- 人の身長や服の色などの特徴を取得したい 👉 [person_feature_extraction](./person_feature_extraction)
 - (開発向け)物体の三次元位置を知りたい 👉 [three_dimensional_data_processingの Position Estimator モジュール]()
 - (Advanced)認識から把持の一連のタスクを行いたい 👉 [happymimi_manipulation](https://github.com/KIT-Happy-Robot/happymimi_manipulation)
 
