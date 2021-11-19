@@ -56,6 +56,8 @@ class DetectClothColor(object):
         neck_y = pose.persons[0].bodyParts[1].pixel.x
         hip_x = pose.persons[0].bodyParts[15].pixel.y
         hip_y = pose.persons[0].bodyParts[15].pixel.x
+        print 'neck: ', neck_x, neck_y
+        print 'hip: ', hip_x, hip_y
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
             return color
         elif neck_x==0.0 and neck_y==0.0:
