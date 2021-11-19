@@ -45,6 +45,14 @@ class HeightEstimation(object):
         p_e_res = self.position_estimate(p_e_req).point
 
         height.data = p_e_res.z*100 + 15
+        print p_e_res.z*100
+
+        p_e_req.center_x = int(480-center_x)
+        p_e_req.center_y = int(640-center_y)
+        p_e_res = self.position_estimate(p_e_req).point
+
+        height.data = p_e_res.z*100 + 15
+        print p_e_res.z*100
         return height
 
 if __name__ == '__main__':
