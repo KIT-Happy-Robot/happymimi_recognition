@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*
 
 import rospy
+import cv2
 from std_msgs.msg import Float64
 from sensor_msgs.msg import Image
 from ros_openpose.msg import Frame
@@ -67,8 +68,8 @@ class DetectClothColor(object):
             center_x = neck_x
             center_y = neck_y - 1###
         else:
-            center_x = (nech_x+hip_x)/2
-            center_y = (nech_y+hip_y)/2
+            center_x = (neck_x+hip_x)/2
+            center_y = (neck_y+hip_y)/2
         if center_y<0: center_y=0
         if center_y>480: center_y=480
 
@@ -76,7 +77,7 @@ class DetectClothColor(object):
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        color.result = judgeColor(hsv_image[int(center_x), int(center_y)])
+        color.result = self.judgeColor(hsv_image[int(center_x), int(center_y)])
         return color
 
 if __name__ == '__main__':
