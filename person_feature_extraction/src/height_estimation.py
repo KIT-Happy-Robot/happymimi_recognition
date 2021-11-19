@@ -21,7 +21,7 @@ class HeightEstimation(object):
 
     def main(self, _):
         height = SetFloatResponse(data=-1)
-        self.head_pub.publish(-25.0)
+        #self.head_pub.publish(-25.0)
         rospy.sleep(1.0)
 
         pose = self.pose_res
@@ -44,14 +44,7 @@ class HeightEstimation(object):
         p_e_req.center_y = int(center_y)
         p_e_res = self.position_estimate(p_e_req).point
 
-        height.data = p_e_res.z*100 + 15
-        print p_e_res.z*100
-
-        p_e_req.center_x = int(480-center_x)
-        p_e_req.center_y = int(640-center_y)
-        p_e_res = self.position_estimate(p_e_req).point
-
-        height.data = p_e_res.z*100 + 15
+        height.data = p_e_res.z*100 + 30
         print p_e_res.z*100
         return height
 

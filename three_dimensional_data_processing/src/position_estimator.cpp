@@ -103,7 +103,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
 
   //角度：head_angleに合わせて調整
   centroid_x = (centroid_x * cos(M_PI*head_angle/180)) + (centroid_z * sin(M_PI*head_angle/180));
-  centroid_z = (centroid_z * cos(M_PI*head_angle/180)) - (distance * sin(M_PI*head_angle/180));
+  centroid_z = (centroid_z * cos(M_PI*head_angle/180)) + (distance * sin(M_PI*head_angle/180));
   ROS_INFO("%f, %f", centroid_x, centroid_z);
 
   //calibrate RealSenseCamera d435
@@ -114,7 +114,6 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   float theta = 90-(38.46+head_angle);
   float head_height = 13.67*sin(theta*M_PI/180);
   float realsense_height = neck_height + (head_height/100);
-  ROS_INFO("%f", realsense_height);
 
   res.point.x = centroid_x / 1000;
   res.point.y = centroid_y / 1000;
