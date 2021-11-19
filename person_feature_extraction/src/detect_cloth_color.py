@@ -28,15 +28,16 @@ class DetectClothColor(object):
     def judgeColor(self, req):
         # hsv色空間で色の判定
         h, s, v = req
+        print h, s, v
         color = ''
         if 0 <= v and v <= 120: color = 'Black'
-        elif (0 <= s and s <= 50) and (230 <= v and v <= 255): color = 'White'
+        elif (0 <= s and s <= 50) and (150 <= v and v <= 255): color = 'White'
         elif (0 <= s and s <= 50) and (120 <= v and v <= 150): color = 'Gray'
         elif (50 <= s and s <= 170) and (120 <= v and v <= 150): color = 'Gray'
         elif (0 <= s and s <= 50) and (120 <= v and v <= 230): color = 'Gray'
-        elif (0 <= h and h <= 9) or (170 <= h and h <= 180): color = 'Red'
-        elif 10 <= h and h <= 24: color = 'Orange'
-        elif 25 <= h and h <= 39: color = 'Yellow'
+        elif (0 <= h and h <= 4) or (170 <= h and h <= 180): color = 'Red'
+        elif 5 <= h and h <= 20: color = 'Orange'
+        elif 21 <= h and h <= 39: color = 'Yellow'
         elif 40 <= h and h <= 89: color = 'Green'
         elif 90 <= h and h <= 136: color = 'Blue'
         elif 137<= h and h <= 159: color = 'Purple'
@@ -55,27 +56,27 @@ class DetectClothColor(object):
         # neckとhipの座標から中点を得る
         neck_x = pose.persons[0].bodyParts[1].pixel.y
         neck_y = pose.persons[0].bodyParts[1].pixel.x
-        hip_x = pose.persons[0].bodyParts[15].pixel.y
-        hip_y = pose.persons[0].bodyParts[15].pixel.x
+        hip_x = pose.persons[0].bodyParts[8].pixel.y
+        hip_y = pose.persons[0].bodyParts[8].pixel.x
         print 'neck: ', neck_x, neck_y
         print 'hip: ', hip_x, hip_y
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
             return color
         elif neck_x==0.0 and neck_y==0.0:
-            center_x = hip_x
-            center_y = hip_y + 1###
+            center_x = hip_x-30
+            center_y = hip_y
         elif hip_x==0.0 and hip_y==0.0:
-            center_x = neck_x
-            center_y = neck_y - 1###
+            center_x = neck_x+30
+            center_y = neck_y
         else:
             center_x = (neck_x+hip_x)/2
             center_y = (neck_y+hip_y)/2
-        if center_y<0: center_y=0
-        if center_y>480: center_y=480
+        if center_x<0: center_x=0
+        if center_x>480: center_x=480
 
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
         color.result = self.judgeColor(hsv_image[int(center_x), int(center_y)])
         return color
