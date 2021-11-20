@@ -21,8 +21,8 @@ class HeightEstimation(object):
 
     def main(self, _):
         height = SetFloatResponse(data=-1)
-        #self.head_pub.publish(-25.0)
-        rospy.sleep(1.0)
+        self.head_pub.publish(-25.0)
+        rospy.sleep(2.5)
 
         pose = self.pose_res
         if len(pose.persons)==0: return height
