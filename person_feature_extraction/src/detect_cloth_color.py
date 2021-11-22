@@ -72,7 +72,9 @@ class DetectClothColor(object):
             center_x = (neck_x+hip_x)/2
             center_y = (neck_y+hip_y)/2
         if center_x<0: center_x=0
-        if center_x>480: center_x=480
+        if center_x>479: center_x=479
+        if center_y<0: center_y=0
+        if center_y>639: center_y=639
 
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
