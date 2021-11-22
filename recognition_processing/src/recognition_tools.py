@@ -48,7 +48,7 @@ class RecognitionTools(object):
 
     def __init__(self):
         rospy.Subscriber('/darknet_ros/bounding_boxes',BoundingBoxes,self.boundingBoxCB)
-        rospy.Subscriber('/darknet_ros/detection_image', Image, self.detectionImageCB)
+        rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Service('/recognition/save',StrTrg,self.saveImage)
         rospy.Service('/recognition/list',RecognitionList,self.listObject)
         rospy.Service('/recognition/find',RecognitionFind,self.findObject)
@@ -56,7 +56,7 @@ class RecognitionTools(object):
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
         rospy.Service('/recognition/multiple_localize',MultipleLocalize,self.multipleLocalize)
 
-        self.detection_image = Image()
+        self.realsense_image = Image()
         self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
         self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
         try:
@@ -87,16 +87,22 @@ class RecognitionTools(object):
             bbox_list.append(bb[i].Class)
         return bbox_list
 
-    def detectionImageCB(self, image):
-        self.detection_image = image
+    def realsenseCB(self, image):
+        self.realsense_image = image
 
-    def saveImage(self, req, msg_image=None):
-        if msg_image is None:
-            msg_image = self.detection_image
+    def saveImage(self, req, bb=None):
+        if bb is None:
+            bb = RecognitionTools.bbox
+        bbox_list = self.createBboxList(bb)
 
         bridge = CvBridge()
         cv2_image = bridge.imgmsg_to_cv2(msg_image, desired_encoding="bgr8")
-        cv2.imwrite(req.data+"/"+str(time.time())+".png", cv2_image)
+
+        font = cv2.FONT_HERSHEY_COMPLEX
+        for i, name in enumerate(bbox_list):
+            cv2.rectangle(cv2_image,(bb[i].xmin,bb[i].ymin),(bb[i].xmax,bb[i].ymax),(255,0,255),2)
+            cv2.putText(cv2_image, name, (bb[i].xmin,bb[i].ymin+20),font,1.0,(0,0,0))
+        cv2.imwrite(req.data+"/"+str(time.time())+".png",cv2_image)
         return
 
     def listObject(self, request, bb=None, internal_call=False):
