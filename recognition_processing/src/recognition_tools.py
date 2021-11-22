@@ -105,7 +105,7 @@ class RecognitionTools(object):
             if pix_y<10: pix_y=10
             cv2.putText(cv2_image, name, (bb[i].xmin,pix_y),font,0.5,(0,0,0))
         cv2.imwrite(req.data+"/"+str(time.time())+".png",cv2_image)
-        return
+        return True
 
     def listObject(self, request, bb=None, internal_call=False):
         rospy.loginfo('module type : List')
