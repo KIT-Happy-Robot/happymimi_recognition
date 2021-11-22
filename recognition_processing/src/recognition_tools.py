@@ -9,6 +9,9 @@ import os
 import sys
 import time
 import numpy
+import cv2
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
 from happymimi_msgs.srv import StrTrg
