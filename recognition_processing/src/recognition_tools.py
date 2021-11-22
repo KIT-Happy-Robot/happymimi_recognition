@@ -11,6 +11,7 @@ import time
 import numpy
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
+from happymimi_msgs.srv import StrTrg
 from happymimi_recognition_msgs.srv import (RecognitionList, RecognitionListRequest, RecognitionListResponse,
                                             RecognitionCount, RecognitionCountRequest, RecognitionCountResponse,
                                             RecognitionFind, RecognitionFindRequest, RecognitionFindResponse,
@@ -44,12 +45,15 @@ class RecognitionTools(object):
 
     def __init__(self):
         rospy.Subscriber('/darknet_ros/bounding_boxes',BoundingBoxes,self.boundingBoxCB)
+        rospy.Subscriber('/darknet_ros/detection_image', Image, self.detectionImageCB)
+        rospy.Service('/recognition/save',StrTrg,self.saveImage)
         rospy.Service('/recognition/list',RecognitionList,self.listObject)
         rospy.Service('/recognition/find',RecognitionFind,self.findObject)
         rospy.Service('/recognition/count',RecognitionCount,self.countObject)
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
         rospy.Service('/recognition/multiple_localize',MultipleLocalize,self.multipleLocalize)
 
+        self.detection_image = Image()
         self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
         self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
         try:
@@ -79,6 +83,18 @@ class RecognitionTools(object):
         for i in range(len(bb)):
             bbox_list.append(bb[i].Class)
         return bbox_list
+
+    def detectionImageCB(self, image):
+        self.detection_image = image
+
+    def saveImage(self, req, msg_image=None):
+        if msg_image is None:
+            msg_image = self.detection_image
+
+        bridge = CvBridge()
+        cv2_image = bridge.imgmsg_to_cv2(msg_image, desired_encoding="bgr8")
+        cv2.imwrite(req.data+"/"+str(time.time())+".png", cv2_image)
+        return
 
     def listObject(self, request, bb=None, internal_call=False):
         rospy.loginfo('module type : List')
