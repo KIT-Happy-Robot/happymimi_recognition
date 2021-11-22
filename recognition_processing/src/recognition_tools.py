@@ -96,12 +96,14 @@ class RecognitionTools(object):
         bbox_list = self.createBboxList(bb)
 
         bridge = CvBridge()
-        cv2_image = bridge.imgmsg_to_cv2(msg_image, desired_encoding="bgr8")
+        cv2_image = bridge.imgmsg_to_cv2(self.realsense_image, desired_encoding="bgr8")
 
-        font = cv2.FONT_HERSHEY_COMPLEX
+        font = cv2.FONT_HERSHEY_SIMPLEX
         for i, name in enumerate(bbox_list):
-            cv2.rectangle(cv2_image,(bb[i].xmin,bb[i].ymin),(bb[i].xmax,bb[i].ymax),(255,0,255),2)
-            cv2.putText(cv2_image, name, (bb[i].xmin,bb[i].ymin+20),font,1.0,(0,0,0))
+            cv2.rectangle(cv2_image,(bb[i].xmin,bb[i].ymin),(bb[i].xmax,bb[i].ymax),(0,255,0),2)
+            pix_y = bb[i].ymin-5
+            if pix_y<10: pix_y=10
+            cv2.putText(cv2_image, name, (bb[i].xmin,pix_y),font,0.5,(0,0,0))
         cv2.imwrite(req.data+"/"+str(time.time())+".png",cv2_image)
         return
 
