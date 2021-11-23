@@ -30,18 +30,20 @@ class DetectClothColor(object):
         h, s, v = req
         print h, s, v
         color = ''
-        if 0 <= v and v <= 120: color = 'Black'
-        elif (0 <= s and s <= 50) and (150 <= v and v <= 255): color = 'White'
-        elif (0 <= s and s <= 50) and (120 <= v and v <= 150): color = 'Gray'
-        elif (50 <= s and s <= 170) and (120 <= v and v <= 150): color = 'Gray'
-        elif (0 <= s and s <= 50) and (120 <= v and v <= 230): color = 'Gray'
-        elif (0 <= h and h <= 4) or (170 <= h and h <= 180): color = 'Red'
-        elif 5 <= h and h <= 20: color = 'Orange'
-        elif 21 <= h and h <= 39: color = 'Yellow'
-        elif 40 <= h and h <= 89: color = 'Green'
-        elif 90 <= h and h <= 136: color = 'Blue'
-        elif 137<= h and h <= 159: color = 'Purple'
-        elif 160 <= h and h <= 169: color = 'Pink'
+        if 0<=v and v<=69: color = 'Black'
+        elif (0<=s and s<=50) and (150<=v and v<=255): color = 'White'
+        elif (0<=s and s<=50) and (70<=v and v<=150): color = 'Gray'
+        #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
+        elif (50<=s and s<=170) and (70<=v and v<=90): color = 'Gray'
+        elif (0<=s and s<=50) and (70<=v and v<=230): color = 'Gray'
+        elif (9<=h and h<=16) and (70<=s and s<=200) and (70<=v and v<=180): color = 'Brown'
+        elif (0<=h and h<=4) or (170<=h and h<=180): color = 'Red'
+        elif 5<=h and h<=20: color = 'Orange'
+        elif 21<=h and h<=39: color = 'Yellow'
+        elif 40<=h and h<=89: color = 'Green'
+        elif 90<=h and h<=136: color = 'Blue'
+        elif 137<=h and h<=159: color = 'Purple'
+        elif 160<=h and h<=169: color = 'Pink'
         return color
 
     def main(self, _):
