@@ -5,7 +5,7 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 
 ## Description
 このパッケージが提供する機能は以下の4つです。
-- Save : 認識画像の保存
+- [Save](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#save) : 認識画像の保存
 - [Find](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#find) ： 物体の探索
 - [List](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list) ： 検出した物体の一覧を取得
 - [Count](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count) ： 物体を数える
