@@ -54,7 +54,7 @@ class Count(smach.State):
         rospy.sleep(1.0)
         bbox = Recognition_Tools.bbox
         userdata.bbox_out = bbox
-        object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).object_num
+        object_count = Recognition_Tools.countObject(RecognitionCountRequest(userdata.target_name_in), bbox).num
         exist_flg = object_count > 0
 
         if (userdata.sort_option_in.num + 1) > object_count:
@@ -97,7 +97,7 @@ class Localize(smach.State):
         localize_request = RecognitionLocalizeRequest()
         localize_request.target_name = userdata.target_name_in
         localize_request.sort_option = userdata.sort_option_in
-        object_centroid = Recognition_Tools.localizeObject(localize_request).centroid_point
+        object_centroid = Recognition_Tools.localizeObject(localize_request).point
         userdata.centroid_out = object_centroid
 
         if not math.isnan(object_centroid.x):
