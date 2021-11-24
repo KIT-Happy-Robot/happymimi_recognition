@@ -49,21 +49,13 @@ class DetectClothColor(object):
         return color
 
     def main(self, _):
-<<<<<<< HEAD
         response = SetStrResponse()
-=======
-        responce = SetStrResponse()
->>>>>>> 09d0b336947730a58913c84a2dd617a0d8e0a9dc
 
         self.head_pub.publish(-20.0)
         rospy.sleep(2.5)
 
         pose = self.pose_res
-<<<<<<< HEAD
         if len(pose.persons)==0: return response
-=======
-        if len(pose.persons)==0: return responce
->>>>>>> 09d0b336947730a58913c84a2dd617a0d8e0a9dc
 
         # neckとhipの座標から中点を得る
         neck_x = pose.persons[0].bodyParts[1].pixel.y
@@ -73,11 +65,7 @@ class DetectClothColor(object):
         print 'neck: ', neck_x, neck_y
         print 'hip: ', hip_x, hip_y
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
-<<<<<<< HEAD
             return response
-=======
-            return responce
->>>>>>> 09d0b336947730a58913c84a2dd617a0d8e0a9dc
         elif neck_x==0.0 and neck_y==0.0:
             center_x = hip_x-10
             center_y = hip_y
@@ -103,18 +91,11 @@ class DetectClothColor(object):
             for j in range(-4, 5):
                 y = center_y + j
                 if y<0 or y>639: continue
-<<<<<<< HEAD
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
         print color_map
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
-=======
-                color = self.judgeColor(hsv_image[int(center_x), int(center_y)])
-                color_map.append(color)
-        count_l = collections.Counter(color_map)
-        responce.result = count_l.most_common()[0][0]
->>>>>>> 09d0b336947730a58913c84a2dd617a0d8e0a9dc
 
         return response
 
