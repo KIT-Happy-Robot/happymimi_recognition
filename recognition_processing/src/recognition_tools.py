@@ -9,8 +9,12 @@ import os
 import sys
 import time
 import numpy
+import cv2
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist, Point
 from darknet_ros_msgs.msg import BoundingBoxes
+from happymimi_msgs.srv import StrTrg
 from happymimi_recognition_msgs.srv import (RecognitionList, RecognitionListRequest, RecognitionListResponse,
                                             RecognitionCount, RecognitionCountRequest, RecognitionCountResponse,
                                             RecognitionFind, RecognitionFindRequest, RecognitionFindResponse,
@@ -44,12 +48,15 @@ class RecognitionTools(object):
 
     def __init__(self):
         rospy.Subscriber('/darknet_ros/bounding_boxes',BoundingBoxes,self.boundingBoxCB)
+        rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
+        rospy.Service('/recognition/save',StrTrg,self.saveImage)
         rospy.Service('/recognition/list',RecognitionList,self.listObject)
         rospy.Service('/recognition/find',RecognitionFind,self.findObject)
         rospy.Service('/recognition/count',RecognitionCount,self.countObject)
         rospy.Service('/recognition/localize',RecognitionLocalize,self.localizeObject)
         rospy.Service('/recognition/multiple_localize',MultipleLocalize,self.multipleLocalize)
 
+        self.realsense_image = Image()
         self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
         self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
         try:
@@ -79,6 +86,26 @@ class RecognitionTools(object):
         for i in range(len(bb)):
             bbox_list.append(bb[i].Class)
         return bbox_list
+
+    def realsenseCB(self, image):
+        self.realsense_image = image
+
+    def saveImage(self, req, bb=None):
+        if bb is None:
+            bb = RecognitionTools.bbox
+        bbox_list = self.createBboxList(bb)
+
+        bridge = CvBridge()
+        cv2_image = bridge.imgmsg_to_cv2(self.realsense_image, desired_encoding="bgr8")
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        for i, name in enumerate(bbox_list):
+            cv2.rectangle(cv2_image,(bb[i].xmin,bb[i].ymin),(bb[i].xmax,bb[i].ymax),(0,255,0),2)
+            pix_y = bb[i].ymin-5
+            if pix_y<10: pix_y=10
+            cv2.putText(cv2_image, name, (bb[i].xmin,pix_y),font,0.5,(0,0,0))
+        cv2.imwrite(req.data+"/"+str(time.time())+".png",cv2_image)
+        return True
 
     def listObject(self, request, bb=None, internal_call=False):
         rospy.loginfo('module type : List')

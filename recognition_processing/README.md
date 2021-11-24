@@ -5,6 +5,7 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 
 ## Description
 このパッケージが提供する機能は以下の4つです。
+- Save : 認識画像の保存
 - [Find](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#find) ： 物体の探索
 - [List](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#list) ： 検出した物体の一覧を取得
 - [Count](https://github.com/KIT-Happy-Robot/happymimi_recognition/tree/master/recognition_processing#count) ： 物体を数える
@@ -14,6 +15,21 @@ Darknet YOLOから得られた物体の認識・検出結果を用いたモジ�
 ※"物体"という言葉を使っていますが、把持可能物体(ex. cupとかbottleとか)だけでなく、人やtvモニターなどDarknet YOLOで定義したカテゴリが対象です。
 
 ## Usage
+### Save
+認識結果であるboundin boxを描画した画像を保存するモジュール  
+リクエストで保存するパスを指定できる  
+保存される画像の名前は(時間).pngになります  
+  
+**仕様**
+| Communication | Name | Type | Request | Result |
+| :---: | :---: | :---: | :---: | :---: |
+| Service | /recognition/save | [StrTrg](https://github.com/KIT-Happy-Robot/happymimi_robot/blob/develop/happymimi_msgs/srv/StrTrg.srv) | string型: `data` | bool型: `result` |
+  
+dataの例  
+`'/home/mimi/recognition'`  
+  
+---
+
 ### Find
 その場で正面から+-45°の範囲で指定された物体を探すモジュール  
 入力されたデータに合わせて物体を探す。一定時間内に見つからなければFalseを返す。  
