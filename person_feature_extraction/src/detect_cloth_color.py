@@ -29,7 +29,7 @@ class DetectClothColor(object):
     def judgeColor(self, req):
         # hsv色空間で色の判定
         h, s, v = req
-        print h, s, v
+        #print h, s, v
         color = ''
         if 0<=v and v<=79: color = 'Black'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
@@ -62,34 +62,53 @@ class DetectClothColor(object):
         neck_y = pose.persons[0].bodyParts[1].pixel.x
         hip_x = pose.persons[0].bodyParts[8].pixel.y
         hip_y = pose.persons[0].bodyParts[8].pixel.x
+        r_shoulder_x = pose.persons[0].bodyParts[2].pixel.y
+        r_shoulder_y = pose.persons[0].bodyParts[2].pixel.x
+        l_shoulder_x = pose.persons[0].bodyParts[5].pixel.y
+        l_shoulder_y = pose.persons[0].bodyParts[5].pixel.x
         print 'neck: ', neck_x, neck_y
         print 'hip: ', hip_x, hip_y
+        print 'r_shoulder: ', r_shoulder_x, r_shoulder_y
+        print 'l_shoulder: ', l_shoulder_x, l_shoulder_y
+
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
             return response
         elif neck_x==0.0 and neck_y==0.0:
-            center_x = hip_x-10
-            center_y = hip_y
-        elif hip_x==0.0 and hip_y==0.0:
-            center_x = neck_x+10
-            center_y = neck_y
+            body_axis_x = hip_x-10
+            body_axis_y = hip_y
+            chest_length = 10
         else:
-            center_x = (neck_x+hip_x)/2
-            center_y = (neck_y+hip_y)/2
-        if center_x<0: center_x=0
-        if center_x>479: center_x=479
-        if center_y<0: center_y=0
-        if center_y>639: center_y=639
+            body_axis_x = neck_x
+            body_axis_y = neck_y
+            elif hip_x==0.0 and hip_y==0.0:
+                chest_length = int(479 - neck_x)
+            else:
+                chest_length = int(hip_x - neck_x)
+        if body_axis_x<0: body_axis_x=0
+        if body_axis_x>479: body_axis_x=479
+        if body_axis_y<0: body_axis_y=0
+        if body_axis_y>639: body_axis_y=639
+
+        if (r_shoulder_x==0.0 and r_shoulder_y==0.0) and (l_shoulder_x==0.0 and l_shoulder_y==0.0):
+            pass
+        elif r_shoulder_x==0.0 and r_shoulder_y==0.0:
+            width = int(l_shoulder_y - body_axis_y)
+        elif l_shoulder_x==0.0 and l_shoulder_y==0.0:
+            width = int(body_axis_y - r_shoulder_y)
+        else:
+            shoulder_width = l_shoulder_y - r_shoulder_y
+            width = int(shoulder_width/2)
 
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = []
-        for i in range(-4, 5):
-            x = center_x + i
+        for i in range(chest_length):
+            x = body_axis_x + i
             if x<0 or x>479: continue
-            for j in range(-4, 5):
-                y = center_y + j
+            for j in range(-width, width):
+                y = body_axis_y + j
                 if y<0 or y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
