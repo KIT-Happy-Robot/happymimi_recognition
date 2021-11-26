@@ -82,7 +82,8 @@ class DetectClothColor(object):
 
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        #hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
         color_map = []
         for i in range(-4, 5):
