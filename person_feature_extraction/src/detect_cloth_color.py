@@ -10,9 +10,11 @@ from ros_openpose.msg import Frame
 from cv_bridge import CvBridge, CvBridgeError
 from happymimi_msgs.srv import SetStr, SetStrResponse
 
+
 class DetectClothColor(object):
     def __init__(self):
-        rospy.Service('/person_feature/cloth_color', SetStr, self.main)
+        rospy.Service('/person_feature/tops_color', SetStr, self.topsColor)
+        rospy.Service('/person_feature/bottoms_color', SetStr, self.bottomsColor)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
@@ -26,7 +28,12 @@ class DetectClothColor(object):
     def openPoseCB(self, res):
         self.pose_res = res
 
-    def judgeColor(self, req):
+    def convertImage(self, image):
+        image = CvBridge().imgmsg_to_cv2(self.image_res)
+        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        return hsv_image
+
+    def pickColor(self, req):
         # hsv色空間で色の判定
         h, s, v = req
         print h, s, v
@@ -48,7 +55,23 @@ class DetectClothColor(object):
         elif 160<=h and h<=173: color = 'Pink'
         return color
 
-    def main(self, _):
+    def extractColor(self, x, y):
+        color_map = []
+        for i in range(-4, 5):
+            x = x + i
+            if x<0 or x>479: continue
+            for j in range(-4, 5):
+                y = y + j
+                if y<0 or y>639: continue
+                color = self.judgeColor(hsv_image[int(x), int(y)])
+                color_map.append(color)
+        print color_map
+        count_l = collections.Counter(color_map)
+        color = count_l.most_common()[0][0]
+        precision = count_l.most_common()[0][1]/float(len(color_map))
+        return color, precision
+
+    def topsColor(self, _):
         response = SetStrResponse()
 
         self.head_pub.publish(-20.0)
@@ -80,24 +103,37 @@ class DetectClothColor(object):
         if center_y<0: center_y=0
         if center_y>639: center_y=639
 
-        # 画像の変換
-        image = CvBridge().imgmsg_to_cv2(self.image_res)
-        hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-
-        color_map = []
-        for i in range(-4, 5):
-            x = center_x + i
-            if x<0 or x>479: continue
-            for j in range(-4, 5):
-                y = center_y + j
-                if y<0 or y>639: continue
-                color = self.judgeColor(hsv_image[int(x), int(y)])
-                color_map.append(color)
-        print color_map
-        count_l = collections.Counter(color_map)
-        response.result = count_l.most_common()[0][0]
-
+        response.result, _ = extractColor(center_x, center_y)
         return response
+
+    def bottomsColor(self, _):
+        response = SetStrResponse()
+
+        self.head_pub.publish(0.0)
+        rospy.sleep(2.5)
+
+        pose = self.pose_res
+        if len(pose.persons)==0: return response
+
+        # r_kneeとl_kneeの座標を得る
+        r_knee_x = pose.persons[0].bodyParts[10].pixel.y
+        r_knee_y = pose.persons[0].bodyParts[10].pixel.x
+        l_knee_x = pose.persons[0].bodyParts[13].pixel.y
+        l_knee_y = pose.persons[0].bodyParts[13].pixel.x
+        print 'r_knee: ', r_knee_x, r_knee_y
+        print 'l_knee: ', l_knee_x, l_knee_y
+        if (r_knee_x==0.0 and r_knee_y==0.0) and (l_knee_x==0.0 and l_knee_y==0.0):
+            return response
+
+        if r_knee_x==0.0 and r_knee_y==0.0:
+            l_color, l_precision = extractColor(l_knee_x, l_knee_y)
+        elif l_knee_x==0.0 and l_knee_y==0.0:
+            r_color, r_precision = extractColor(r_knee_x, r_knee_y)
+
+        if r_precision > l_precision:
+            response.result = r_color
+        return response
+
 
 if __name__ == '__main__':
     rospy.init_node('detect_cloth_color')
