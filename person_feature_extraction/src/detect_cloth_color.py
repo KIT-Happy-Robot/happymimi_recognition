@@ -36,7 +36,7 @@ class DetectClothColor(object):
     def pickColor(self, req):
         # hsv色空間で色の判定
         h, s, v = req
-        print h, s, v
+        #print h, s, v
         color = ''
         if 0<=v and v<=79: color = 'Black'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
@@ -55,7 +55,7 @@ class DetectClothColor(object):
         elif 160<=h and h<=173: color = 'Pink'
         return color
 
-    def extractColor(self, x, y):
+    def extractColor(self, hsv_image, x, y):
         color_map = []
         for i in range(-4, 5):
             x = x + i
@@ -63,9 +63,9 @@ class DetectClothColor(object):
             for j in range(-4, 5):
                 y = y + j
                 if y<0 or y>639: continue
-                color = self.judgeColor(hsv_image[int(x), int(y)])
+                color = self.pickColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        print color_map
+        #print color_map
         count_l = collections.Counter(color_map)
         color = count_l.most_common()[0][0]
         precision = count_l.most_common()[0][1]/float(len(color_map))
@@ -103,13 +103,15 @@ class DetectClothColor(object):
         if center_y<0: center_y=0
         if center_y>639: center_y=639
 
-        response.result, _ = extractColor(center_x, center_y)
+        hsv_image = self.convertImage(self.image_res)
+
+        response.result, _ = self.extractColor(hsv_image, center_x, center_y)
         return response
 
     def bottomsColor(self, _):
         response = SetStrResponse()
 
-        self.head_pub.publish(0.0)
+        self.head_pub.publish(20.0)
         rospy.sleep(2.5)
 
         pose = self.pose_res
@@ -125,13 +127,24 @@ class DetectClothColor(object):
         if (r_knee_x==0.0 and r_knee_y==0.0) and (l_knee_x==0.0 and l_knee_y==0.0):
             return response
 
-        if r_knee_x==0.0 and r_knee_y==0.0:
-            l_color, l_precision = extractColor(l_knee_x, l_knee_y)
-        elif l_knee_x==0.0 and l_knee_y==0.0:
-            r_color, r_precision = extractColor(r_knee_x, r_knee_y)
+        hsv_image = self.convertImage(self.image_res)
 
+        if r_knee_x==0.0 and r_knee_y==0.0:
+            l_color, l_precision = self.extractColor(hsv_image, l_knee_x, l_knee_y)
+            r_precision = 0
+        elif l_knee_x==0.0 and l_knee_y==0.0:
+            r_color, r_precision = self.extractColor(hsv_image, r_knee_x, r_knee_y)
+            l_precision = 0
+        else:
+            r_color, r_precision = self.extractColor(hsv_image, r_knee_x, r_knee_y)
+            l_color, l_precision = self.extractColor(hsv_image, l_knee_x, l_knee_y)
+
+        print r_precision, l_precision
         if r_precision > l_precision:
             response.result = r_color
+        else:
+            response.result = l_color
+
         return response
 
 
