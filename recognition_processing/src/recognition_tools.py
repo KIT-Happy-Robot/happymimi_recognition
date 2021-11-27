@@ -266,7 +266,12 @@ class RecognitionTools(object):
         list_req.sort_option = 'front'
         object_list = self.listObject(request=list_req, bb=RecognitionTools.bbox, internal_call=True).object_list
 
-        response_centroid.points = [row[1] for row in object_list]
+        #response_centroid.points = [row[1] for row in object_list if not(row[1].x is numpy.nan)]
+        response_list = []
+        for row in object_list:
+            if not(row[1].x is numpy.nan) and row[1].x > 0.1:
+                response_list.append(row[1])
+        response_centroid.points = response_list
         return response_centroid
 
 
