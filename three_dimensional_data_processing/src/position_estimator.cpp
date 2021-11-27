@@ -111,7 +111,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   centroid_y += 30;
 
   //RealSenseの高さ調整
-  float theta = 90-(38.46+head_angle);
+  float theta = 90-(38.46-head_angle);
   float head_height = 13.67*sin(theta*M_PI/180);
   float realsense_height = neck_height + (head_height/100);
 
