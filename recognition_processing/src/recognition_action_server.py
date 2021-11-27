@@ -128,6 +128,7 @@ class CheckCenter(smach.State):
             return 'action_failed'
         else:
             #if abs(object_angle) < 3.5: object_angle=object_angle/abs(object_angle)*3.5
+            print object_angle
             self.base_control.rotateAngle(float(object_angle))
             rospy.sleep(2.0)
             userdata.c_l_count_out = userdata.c_l_count_in + 1
