@@ -80,7 +80,7 @@ class DetectClothColor(object):
         else:
             body_axis_x = neck_x
             body_axis_y = neck_y
-            elif hip_x==0.0 and hip_y==0.0:
+            if hip_x==0.0 and hip_y==0.0:
                 chest_length = int(479 - neck_x)
             else:
                 chest_length = int(hip_x - neck_x)
@@ -103,8 +103,8 @@ class DetectClothColor(object):
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-        color_map = []
-        for i in range(chest_length):
+        color_map = ['']
+        for i in range(chest_length+1):
             x = body_axis_x + i
             if x<0 or x>479: continue
             for j in range(-width, width):
