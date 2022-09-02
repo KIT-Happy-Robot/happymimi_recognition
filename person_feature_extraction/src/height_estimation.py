@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*
 
 import rospy
@@ -50,7 +50,7 @@ class HeightEstimation(object):
         p_e_res = self.position_estimate(p_e_req).point
 
         height.data = p_e_res.z*100 + 30
-        print p_e_res.z*100
+        print(p_e_res.z*100)
         return height
 
 if __name__ == '__main__':
