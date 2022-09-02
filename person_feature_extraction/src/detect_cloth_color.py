@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*
 
 import rospy
@@ -66,10 +66,10 @@ class DetectClothColor(object):
         r_shoulder_y = pose.persons[0].bodyParts[2].pixel.x
         l_shoulder_x = pose.persons[0].bodyParts[5].pixel.y
         l_shoulder_y = pose.persons[0].bodyParts[5].pixel.x
-        print 'neck: ', neck_x, neck_y
-        print 'hip: ', hip_x, hip_y
-        print 'r_shoulder: ', r_shoulder_x, r_shoulder_y
-        print 'l_shoulder: ', l_shoulder_x, l_shoulder_y
+        print('neck: ', neck_x, neck_y)
+        print('hip: ', hip_x, hip_y)
+        print('r_shoulder: ', r_shoulder_x, r_shoulder_y)
+        print('l_shoulder: ', l_shoulder_x, l_shoulder_y)
 
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
             return response
@@ -112,7 +112,7 @@ class DetectClothColor(object):
                 if y<0 or y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        print color_map
+        print(color_map)
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
 
