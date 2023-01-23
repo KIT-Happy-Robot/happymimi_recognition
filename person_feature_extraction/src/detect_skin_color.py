@@ -12,7 +12,7 @@ from happymimi_msgs.srv import SetStr, SetStrResponse
 
 class DetectClothColor(object):
     def __init__(self):
-        rospy.Service('/person_feature/cloth_color', SetStr, self.main)
+        rospy.Service('/person_feature/skin_color', SetStr, self.main)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         #実験用に首が動かないようにしている
