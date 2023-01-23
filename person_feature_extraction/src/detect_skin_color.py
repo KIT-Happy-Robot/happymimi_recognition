@@ -59,8 +59,8 @@ class DetectClothColor(object):
         if len(pose.persons)==0: return response
 
         # neck, REye,LEye,Noseの位置を取得
-        neck_x = pose.persons[0].bodyParts[1].pixel.y
-        neck_y = pose.persons[0].bodyParts[1].pixel.x
+        neck_x = pose.persons[0].bodyParts[1].pixel.x
+        neck_y = pose.persons[0].bodyParts[1].pixel.y
         reye_x = pose.persons[0].bodyParts[15].pixel.x
         reye_y = pose.persons[0].bodyParts[15].pixel.y
         leye_x = pose.persons[0].bodyParts[16].pixel.x
@@ -73,12 +73,13 @@ class DetectClothColor(object):
         lear_x = pose.persons[0].bodyParts[18].pixel.x
         lear_y = pose.persons[0].bodyParts[17].pixel.y                           
         
+        print('neck: ', neck_x, neck_y)
         print('reye: ', reye_x, reye_y)
         print('leye: ', leye_x, leye_y)
         print('nose: ', nose_x, nose_y)
         
         
-        if (neck_x==0.0 and neck_y==0.0) and (nose_x==0.0 and nose_y==0.0):
+        """ if (neck_x==0.0 and neck_y==0.0) and (nose_x==0.0 and nose_y==0.0):
             return response
         elif nose_x==0.0 and nose_y==0.0:
             face_axis_x = (reye_x + leye_x) / 2.0
@@ -89,7 +90,7 @@ class DetectClothColor(object):
             if nose_x==0.0 and nose_y==0.0:
                 face_length = int(479 - neck_x)
             else:
-                face_length = int((reye_x + leye_x) / 2.0 - nose_x)
+                face_length = int(nose_x  - neck_x)
             
         if face_axis_x<0: face_axis_x=0
         if face_axis_x>479: face_axis_x=479
@@ -102,10 +103,20 @@ class DetectClothColor(object):
             width = int(lear_y - face_axis_y)
         elif lear_x==0.0 and lear_y==0.0:
             width = int(face_axis_y - rear_y)
-        #else:
+        else:
             ear_width = lear_y - rear_y
             width = int(ear_width/2)
-
+ """    
+        face_length = int(nose_x - neck_x)
+        face_axis_x = int(nose_y)
+        face_axis_y = int(nose_x)
+        width = int(leye_x - reye_x)
+        
+        print("face_length:", face_length)
+        print("face_axis_x:", face_axis_x)
+        print("face_axis_y:", face_axis_y)
+        print("width:", width)
+        
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -129,3 +140,4 @@ if __name__ == '__main__':
     rospy.init_node('detect_cloth_color')
     detect_cloth_color = DetectClothColor()
     rospy.spin()
+
