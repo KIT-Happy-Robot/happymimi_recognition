@@ -28,7 +28,7 @@ class DetectClothColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        h, s, v = req
+        s, h, v = req
         #print h, s, v
         color = ''
         if 0<=v and v<=79: color = 'Black'

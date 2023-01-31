@@ -29,22 +29,26 @@ class DetectClothColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        h, s, v = req
+        s, h, v = req
         #print h, s, v
         color = ''
+        print(req)
+
+        
         if 0<=v and v<=79: color = 'Black'
+        elif (25<=h and h<= 35) and (20<=s and s<=30): color = 'skin'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
         elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
         #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
-        elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
+        #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
         #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
         #elif (5<=h and h<=18) and (20<=s and s<=240) and (70<=v and v<=180): color = 'Brown'
         elif (5<=h and h<=18) and v<=200: color = 'Brown'
         elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
         elif 5<=h and h<=18: color = 'Orange'
-        elif 19<=h and h<=39: color = 'Yellow'
+        elif 20<=h and h<=39: color = 'Yellow'
         elif 40<=h and h<=89: color = 'Green'
-        elif 90<=h and h<=136: color = 'Blue'
+        elif 180<=h and h<=240: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
         return color
@@ -107,7 +111,7 @@ class DetectClothColor(object):
             ear_width = lear_y - rear_y
             width = int(ear_width/2)
  """    
-        face_length = int(nose_x - neck_x)
+        face_length = int(neck_y - nose_y)
         face_axis_x = int(nose_y)
         face_axis_y = int(nose_x)
         width = int(leye_x - reye_x)
