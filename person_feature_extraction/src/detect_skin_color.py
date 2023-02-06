@@ -29,21 +29,23 @@ class DetectClothColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        s, h, v = req
+        #s, h, v = req
+        h,s,v = req
         #print h, s, v
         color = ''
-        print(req)
+        #print(req)
 
         
         if 0<=v and v<=79: color = 'Black'
-        elif (25<=h and h<= 35) and (20<=s and s<=30): color = 'skin'
-        elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
+        #if 0<=v and v<=50: color = 'Black'
+        if (25<=h and h<= 40) and (20<=s and s<=35): color = 'skin'
+        elif (0<=s and s<=25) and (190<=v and v<=255): color = 'White'#→Europe
         elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
         #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
         #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
         #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
         #elif (5<=h and h<=18) and (20<=s and s<=240) and (70<=v and v<=180): color = 'Brown'
-        elif (5<=h and h<=18) and v<=200: color = 'Brown'
+        elif (5<=h and h<=18) and v<=200: color = 'Brown' #→Asia?
         elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
         elif 5<=h and h<=18: color = 'Orange'
         elif 20<=h and h<=39: color = 'Yellow'
@@ -51,6 +53,7 @@ class DetectClothColor(object):
         elif 180<=h and h<=240: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
+        
         return color
 
     def main(self, _):
@@ -63,25 +66,26 @@ class DetectClothColor(object):
         if len(pose.persons)==0: return response
 
         # neck, REye,LEye,Noseの位置を取得
-        neck_x = pose.persons[0].bodyParts[1].pixel.x
-        neck_y = pose.persons[0].bodyParts[1].pixel.y
-        reye_x = pose.persons[0].bodyParts[15].pixel.x
-        reye_y = pose.persons[0].bodyParts[15].pixel.y
-        leye_x = pose.persons[0].bodyParts[16].pixel.x
-        leye_y = pose.persons[0].bodyParts[16].pixel.y
-        nose_x = pose.persons[0].bodyParts[0].pixel.x
-        nose_y = pose.persons[0].bodyParts[0].pixel.y
+        neck_x = pose.persons[0].bodyParts[1].pixel.y
+        neck_y = pose.persons[0].bodyParts[1].pixel.x
+        reye_x = pose.persons[0].bodyParts[15].pixel.y
+        reye_y = pose.persons[0].bodyParts[15].pixel.x
+        leye_x = pose.persons[0].bodyParts[16].pixel.y
+        leye_y = pose.persons[0].bodyParts[16].pixel.x
+        nose_x = pose.persons[0].bodyParts[0].pixel.y
+        nose_y = pose.persons[0].bodyParts[0].pixel.x
         
-        rear_x = pose.persons[0].bodyParts[17].pixel.x
-        rear_y = pose.persons[0].bodyParts[17].pixel.y
-        lear_x = pose.persons[0].bodyParts[18].pixel.x
-        lear_y = pose.persons[0].bodyParts[17].pixel.y                           
+        rear_x = pose.persons[0].bodyParts[17].pixel.y
+        rear_y = pose.persons[0].bodyParts[17].pixel.x
+        lear_x = pose.persons[0].bodyParts[18].pixel.y
+        lear_y = pose.persons[0].bodyParts[17].pixel.x                           
         
         print('neck: ', neck_x, neck_y)
         print('reye: ', reye_x, reye_y)
         print('leye: ', leye_x, leye_y)
         print('nose: ', nose_x, nose_y)
-        
+        print("lear", lear_x,lear_y)
+        print("rear", rear_x, rear_y)
         
         """ if (neck_x==0.0 and neck_y==0.0) and (nose_x==0.0 and nose_y==0.0):
             return response
@@ -111,10 +115,13 @@ class DetectClothColor(object):
             ear_width = lear_y - rear_y
             width = int(ear_width/2)
  """    
-        face_length = int(neck_y - nose_y)
-        face_axis_x = int(nose_y)
-        face_axis_y = int(nose_x)
-        width = int(leye_x - reye_x)
+        face_length = int(neck_x - nose_x)
+        face_axis_x = int(nose_x)
+        face_axis_y = int(nose_y)
+        width = int(rear_x - lear_x)
+        if width < 0:
+            width = -1*width
+        
         
         print("face_length:", face_length)
         print("face_axis_x:", face_axis_x)
@@ -126,22 +133,23 @@ class DetectClothColor(object):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
-        for i in range(face_length+1):
-            x = face_axis_x + i
-            if x<0 or x>479: continue
-            for j in range(-width, width):
-                y = face_axis_y + j
-                if y<0 or y>639: continue
+        for i in range(face_length):
+            x = i
+            if x>479:continue
+            for j in range(width):
+                y = width
+                if y>639:continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        print(color_map)
+        #print(color_map)
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
-
+        
+        print(response.result)
         return response
 
 if __name__ == '__main__':
-    rospy.init_node('detect_cloth_color')
+    rospy.init_node('detect_skin_color')
     detect_cloth_color = DetectClothColor()
     rospy.spin()
 

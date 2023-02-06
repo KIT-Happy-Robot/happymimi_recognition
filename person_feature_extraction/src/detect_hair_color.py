@@ -35,22 +35,23 @@ class DetectClothColor(object):
         #print h, s, v
         color = ''
         if 0<=v and v<=79: color = 'Black'
+        elif (25<=h and h<= 35) and (20<=s and s<=30): color = 'skin'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
         elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
         #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
-        elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
+        #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
         #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
         #elif (5<=h and h<=18) and (20<=s and s<=240) and (70<=v and v<=180): color = 'Brown'
         elif (5<=h and h<=18) and v<=200: color = 'Brown'
         elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
         elif 5<=h and h<=18: color = 'Orange'
-        elif 19<=h and h<=39: color = 'Yellow'
+        elif 20<=h and h<=39: color = 'Yellow'
         elif 40<=h and h<=89: color = 'Green'
-        elif 90<=h and h<=136: color = 'Blue'
+        elif 180<=h and h<=240: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
         return color
-
+        
     def main(self, _):
         response = SetStrResponse()
 
@@ -77,9 +78,9 @@ class DetectClothColor(object):
         print('leye: ', leye_x, leye_y)
         print('nose: ', nose_x, nose_y)
 
-        width = int(leye_x - reye_x)
-        face_axis_x = int(nose_y)
-        face_axis_y = int(nose_x)
+        width = int(leye_y - reye_y)
+        face_axis_x = int(nose_x)
+        face_axis_y = int(nose_y)
         face_length = 30
 
         # 画像の変換
