@@ -137,7 +137,7 @@ class DetectClothColor(object):
             x = i
             if x>479:continue
             for j in range(width):
-                y = width
+                y = j
                 if y>639:continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
