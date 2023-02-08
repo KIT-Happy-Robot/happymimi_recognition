@@ -55,8 +55,9 @@ class DetectClothColor(object):
         elif 160<=h and h<=173: color = 'Pink'
         '''
         if 0<= v and v<= 50: color = 'Black'
-        if 200<= v and v <= 255 : color = 'White'
-        if 105 <= v and 199 <= v : color = 'Gray'
+        if 200<= v and v <= 255 : color = 'White'#マスク着用
+        if (0<=s and s<=25) and (90<=v and v<=255): color = 'White'
+        if 90 <= v and 199 <= v : color = 'Gray'
         if (110<=h and h<=130) and (120<=s and s<=160): color = 'Brown' #黒人
         elif 110<=h and h<=130: color = 'Red'
         if 100<=h and h<=110: color = 'Orange' #Asia
