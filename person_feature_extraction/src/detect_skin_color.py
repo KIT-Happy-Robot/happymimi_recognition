@@ -29,18 +29,18 @@ class DetectClothColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        #s, h, v = req
-        h,s,v = req
-        #print h, s, v
+        h, s, v = req
+        #h,s,v = req
+        print( h, s, v)
         color = ''
         #print(req)
 
-        
+        '''
         if 0<=v and v<=79: color = 'Black'
         #if 0<=v and v<=50: color = 'Black'
         if (25<=h and h<= 40) and (20<=s and s<=35): color = 'skin'
-        elif (0<=s and s<=25) and (190<=v and v<=255): color = 'White'#→Europe
-        elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
+        if (0<=s and s<=25) and (190<=v and v<=255): color = 'White'#→Europe
+        if (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
         #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
         #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
         #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
@@ -48,19 +48,31 @@ class DetectClothColor(object):
         elif (5<=h and h<=18) and v<=200: color = 'Brown' #→Asia?
         elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
         elif 5<=h and h<=18: color = 'Orange'
-        elif 20<=h and h<=39: color = 'Yellow'
-        elif 40<=h and h<=89: color = 'Green'
+        elif 20<=h and h<=59: color = 'Yellow'
+        elif 60<=h and h<=89: color = 'Green'
         elif 180<=h and h<=240: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
-        
+        '''
+        if 0<= v and v<= 50: color = 'Black'
+        if 200<= v and v <= 255 : color = 'White'
+        if 105 <= v and 199 <= v : color = 'Gray'
+        if (110<=h and h<=130) and (120<=s and s<=160): color = 'Brown' #黒人
+        elif 110<=h and h<=130: color = 'Red'
+        if 100<=h and h<=110: color = 'Orange' #Asia
+        if (25<=h and h<= 40) and (20<=s and s<=35): color = 'skin'
+        if 75<=h and h<=99: color = 'Yellow'#Asia
+        elif 50<=h and h<=74: color = 'Green'
+        elif 0<=h and h<=20: color = 'Blue'
+        elif 137<=h and h<=159: color = 'Purple'
+        elif 120<=h and h<=135: color = 'Pink' #白人?
         return color
 
     def main(self, _):
         response = SetStrResponse()
 
         #self.head_pub.publish(-20.0)
-        rospy.sleep(2.5)
+        #rospy.sleep(2.5)
 
         pose = self.pose_res
         if len(pose.persons)==0: return response
@@ -115,7 +127,7 @@ class DetectClothColor(object):
             ear_width = lear_y - rear_y
             width = int(ear_width/2)
  """    
-        face_length = int(neck_x - nose_x)
+        face_length = int(neck_x - nose_x - 50)
         face_axis_x = int(nose_x)
         face_axis_y = int(nose_y)
         width = int(rear_x - lear_x)
@@ -134,14 +146,14 @@ class DetectClothColor(object):
 
         color_map = ['']
         for i in range(face_length):
-            x = i
-            if x>479:continue
+            x = i + face_axis_x
+            #if x<0 or x>479: continue
             for j in range(width):
-                y = width
-                if y>639:continue
+                y = j + face_axis_y
+                #if y<0 or y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        #print(color_map)
+        print(color_map)
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
         
