@@ -25,22 +25,28 @@ class HeightEstimation(object):
         rospy.sleep(2.5)
 
         pose = self.pose_res
-        if len(pose.persons)==0: return height
+        if len(pose.persons)==0: return height#検知しない場合-1を返す
 
+        #鼻の位置を検出
         center_x = pose.persons[0].bodyParts[0].pixel.y
         center_y = pose.persons[0].bodyParts[0].pixel.x
         if center_x==0 and center_y==0:
+            #右目の位置の検出
             center_x = pose.persons[0].bodyParts[15].pixel.y
             center_y = pose.persons[0].bodyParts[15].pixel.x
             if center_x==0 and center_y==0:
+                #左目の位置の検出
                 center_x = pose.persons[0].bodyParts[16].pixel.y
                 center_y = pose.persons[0].bodyParts[16].pixel.x
+                #身長の推定がうまく行きそうにない場合、再度推定を行う
                 if center_x==0 and center_y==0:
                     return height
-        if center_x<0: center_x=0
-        if center_x>479: center_x=479
-        if center_y<0: center_y=0
-        if center_y>639: center_y=639
+        
+        #身長の推定がうまく行きそうにない場合、再度推定を行う
+        if center_x<0: center_x=0 return height
+        if center_x>479: center_x=479 return height
+        if center_y<0: center_y=0 return height
+        if center_y>639: center_y=639 return height
 
 
         rospy.wait_for_service('/detect/depth')

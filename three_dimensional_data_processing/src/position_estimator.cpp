@@ -29,7 +29,7 @@ private:
   float neck_height = 0.0;
   /* -- member variables -- */
   sensor_msgs::ImageConstPtr depth_image;
-  int head_angle = 0;
+  float head_angle = 0.0;
   /* -- member functions --*/
   void realSenseCB(const sensor_msgs::ImageConstPtr& ros_image);
   void motorAngleCB(std_msgs::Float64MultiArray angle_res);
@@ -102,7 +102,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   ROS_INFO("x: %f, y: %f", centroid_x, centroid_z);
 
   //角度：head_angleに合わせて調整
-  centroid_x = (centroid_x * cos(M_PI*head_angle/180)) + (centroid_z * sin(M_PI*head_angle/180));
+  centroid_x = (centroid_x * cos(M_PI*head_angle/180)) - (centroid_z * sin(M_PI*head_angle/180));
   centroid_z = (centroid_z * cos(M_PI*head_angle/180)) + (distance * sin(M_PI*head_angle/180));
   ROS_INFO("%f, %f", centroid_x, centroid_z);
 
@@ -111,7 +111,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   centroid_y += 30;
 
   //RealSenseの高さ調整
-  float theta = 90-(38.46+head_angle);
+  float theta = 90-(38.46-head_angle);
   float head_height = 13.67*sin(theta*M_PI/180);
   float realsense_height = neck_height + (head_height/100);
 

@@ -12,7 +12,7 @@ from happymimi_msgs.srv import SetStr, SetStrResponse
 
 class DetectClothColor(object):
     def __init__(self):
-        rospy.Service('/person_feature/cloth_color', SetStr, self.main)
+        rospy.Service('/person_feature/pants_color', SetStr, self.main)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
@@ -51,26 +51,36 @@ class DetectClothColor(object):
     def main(self, _):
         response = SetStrResponse()
 
+        #ここを下側に向けたい
+        #ズボンの色を検出したいから
+        #hipとankleが見えればおけ
         self.head_pub.publish(-20.0)
         rospy.sleep(2.5)
 
         pose = self.pose_res
         if len(pose.persons)==0: return response
 
-        # neckとhipの座標から中点を得る
-        neck_x = pose.persons[0].bodyParts[1].pixel.y
-        neck_y = pose.persons[0].bodyParts[1].pixel.x
-        hip_x = pose.persons[0].bodyParts[8].pixel.y
-        hip_y = pose.persons[0].bodyParts[8].pixel.x
-        r_shoulder_x = pose.persons[0].bodyParts[2].pixel.y
-        r_shoulder_y = pose.persons[0].bodyParts[2].pixel.x
-        l_shoulder_x = pose.persons[0].bodyParts[5].pixel.y
-        l_shoulder_y = pose.persons[0].bodyParts[5].pixel.x
-        print('neck: ', neck_x, neck_y)
-        print('hip: ', hip_x, hip_y)
-        print('r_shoulder: ', r_shoulder_x, r_shoulder_y)
-        print('l_shoulder: ', l_shoulder_x, l_shoulder_y)
+        # ankleとhipの座標を得る
+        rhip_x = pose.persons[0].bodyParts[9].pixel.y
+        rhip_y = pose.persons[0].bodyParts[9].pixel.x
+        lhip_x = pose.persons[0].bodyParts[12].pixel.y
+        lhip_y = pose.persons[0].bodyParts[12].pixel.x
 
+        rankle_x = pose.persons[0].bodyParts[11].pixel.y
+        rankle_y = pose.persons[0].bodyParts[11].pixel.x
+        lankle_x = pose.persons[0].bodyParts[14].pixel.y
+        lankle_y = pose.persons[0].bodyParts[14].pixel.x
+
+        print("rhip_x",rhip_x)
+        print("rhip_y",rhip_y)
+        print("lhip_x",lhip_x)
+        print("lhip_y",lhip_y)
+        print("---------------------")
+        print("rankle_x",rankle_x)
+        print("rankle_y",rankle_y)
+        print("lankle_x",rankle_x)
+        print("lankle_y",rankle_y)
+        '''
         if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
             return response
         elif neck_x==0.0 and neck_y==0.0:
@@ -98,24 +108,31 @@ class DetectClothColor(object):
         else:
             shoulder_width = l_shoulder_y - r_shoulder_y
             width = int(shoulder_width/2)
-
+        '''
+        leg_length = int(rankle_x - rhip_x)
+        leg_axis_x = int(rhip_x)
+        leg_axis_y = int(rhip_y)
+        width      = int(rhip_x - lhip_x)
+        if width < 0:
+            width = -1*width
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
         for i in range(chest_length+1):
-            x = body_axis_x + i
-            if x<0 or x>479: continue
-            for j in range(-width, width):
-                y = body_axis_y + j
-                if y<0 or y>639: continue
+            x = i
+            if x>479: continue
+            for j in range(width):
+                y = j
+                if y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        print(color_map)
+        #print(color_map)
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
 
+        print(response.result)
         return response
 
 if __name__ == '__main__':

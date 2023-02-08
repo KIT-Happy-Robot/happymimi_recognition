@@ -8,11 +8,14 @@ from std_msgs.msg import Float64
 from sensor_msgs.msg import Image
 from ros_openpose.msg import Frame
 from cv_bridge import CvBridge, CvBridgeError
+import numpy as np
+import matplotlib as plt
+
 from happymimi_msgs.srv import SetStr, SetStrResponse
 
 class DetectClothColor(object):
     def __init__(self):
-        rospy.Service('/person_feature/cloth_color', SetStr, self.main)
+        rospy.Service('/person_feature/hair_color', SetStr, self.main)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
@@ -32,22 +35,23 @@ class DetectClothColor(object):
         #print h, s, v
         color = ''
         if 0<=v and v<=79: color = 'Black'
+        elif (25<=h and h<= 35) and (20<=s and s<=30): color = 'skin'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
         elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
         #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
-        elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
+        #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
         #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
         #elif (5<=h and h<=18) and (20<=s and s<=240) and (70<=v and v<=180): color = 'Brown'
         elif (5<=h and h<=18) and v<=200: color = 'Brown'
         elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
         elif 5<=h and h<=18: color = 'Orange'
-        elif 19<=h and h<=39: color = 'Yellow'
+        elif 20<=h and h<=39: color = 'Yellow'
         elif 40<=h and h<=89: color = 'Green'
-        elif 90<=h and h<=136: color = 'Blue'
+        elif 180<=h and h<=240: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
         return color
-
+        
     def main(self, _):
         response = SetStrResponse()
 
@@ -58,57 +62,37 @@ class DetectClothColor(object):
         if len(pose.persons)==0: return response
 
         # neckとhipの座標から中点を得る
-        neck_x = pose.persons[0].bodyParts[1].pixel.y
-        neck_y = pose.persons[0].bodyParts[1].pixel.x
-        hip_x = pose.persons[0].bodyParts[8].pixel.y
-        hip_y = pose.persons[0].bodyParts[8].pixel.x
-        r_shoulder_x = pose.persons[0].bodyParts[2].pixel.y
-        r_shoulder_y = pose.persons[0].bodyParts[2].pixel.x
-        l_shoulder_x = pose.persons[0].bodyParts[5].pixel.y
-        l_shoulder_y = pose.persons[0].bodyParts[5].pixel.x
-        print('neck: ', neck_x, neck_y)
-        print('hip: ', hip_x, hip_y)
-        print('r_shoulder: ', r_shoulder_x, r_shoulder_y)
-        print('l_shoulder: ', l_shoulder_x, l_shoulder_y)
+        reye_x = pose.persons[0].bodyParts[15].pixel.x
+        reye_y = pose.persons[0].bodyParts[15].pixel.y
+        leye_x = pose.persons[0].bodyParts[16].pixel.x
+        leye_y = pose.persons[0].bodyParts[16].pixel.y
+        nose_x = pose.persons[0].bodyParts[0].pixel.x
+        nose_y = pose.persons[0].bodyParts[0].pixel.y
+        
+        rear_x = pose.persons[0].bodyParts[17].pixel.x
+        rear_y = pose.persons[0].bodyParts[17].pixel.y
+        lear_x = pose.persons[0].bodyParts[18].pixel.x
+        lear_y = pose.persons[0].bodyParts[17].pixel.y                           
+        
+        print('reye: ', reye_x, reye_y)
+        print('leye: ', leye_x, leye_y)
+        print('nose: ', nose_x, nose_y)
 
-        if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
-            return response
-        elif neck_x==0.0 and neck_y==0.0:
-            body_axis_x = hip_x-10
-            body_axis_y = hip_y
-            chest_length = 10
-        else:
-            body_axis_x = neck_x
-            body_axis_y = neck_y
-            if hip_x==0.0 and hip_y==0.0:
-                chest_length = int(479 - neck_x)
-            else:
-                chest_length = int(hip_x - neck_x)
-        if body_axis_x<0: body_axis_x=0
-        if body_axis_x>479: body_axis_x=479
-        if body_axis_y<0: body_axis_y=0
-        if body_axis_y>639: body_axis_y=639
-
-        if (r_shoulder_x==0.0 and r_shoulder_y==0.0) and (l_shoulder_x==0.0 and l_shoulder_y==0.0):
-            pass
-        elif r_shoulder_x==0.0 and r_shoulder_y==0.0:
-            width = int(l_shoulder_y - body_axis_y)
-        elif l_shoulder_x==0.0 and l_shoulder_y==0.0:
-            width = int(body_axis_y - r_shoulder_y)
-        else:
-            shoulder_width = l_shoulder_y - r_shoulder_y
-            width = int(shoulder_width/2)
+        width = int(leye_y - reye_y)
+        face_axis_x = int(nose_x)
+        face_axis_y = int(nose_y)
+        face_length = 30
 
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
-        for i in range(chest_length+1):
-            x = body_axis_x + i
+        for i in range(face_length+1):
+            x = face_axis_x + i
             if x<0 or x>479: continue
             for j in range(-width, width):
-                y = body_axis_y + j
+                y = face_axis_y + j
                 if y<0 or y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)

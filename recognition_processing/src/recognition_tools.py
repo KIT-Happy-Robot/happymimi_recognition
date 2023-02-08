@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*
 
 import rospy
@@ -37,8 +37,9 @@ class CallDetector(object):
     def detectorService(self, center_x, center_y):
         rospy.wait_for_service('/detect/depth')
         position_estimator_req = PositionEstimatorRequest()
-        position_estimator_req.center_x = center_x
-        position_estimator_req.center_y = center_y
+        position_estimator_req.center_x = int(center_x)
+        position_estimator_req.center_y = int(center_y)
+        print(position_estimator_req.center_x, position_estimator_req.center_y)
         res = self.detect_depth(position_estimator_req)
         self.object_centroid = res.point
 
