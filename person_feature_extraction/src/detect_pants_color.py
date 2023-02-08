@@ -120,7 +120,11 @@ class DetectClothColor(object):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
+<<<<<<< HEAD
         for i in range(leg_length):
+=======
+        for i in range(chest_length+1):
+>>>>>>> 305736ddabd432bd203be16115c4a1c70884d532
             x = i
             if x>479: continue
             for j in range(width):
@@ -138,4 +142,8 @@ class DetectClothColor(object):
 if __name__ == '__main__':
     rospy.init_node('detect_cloth_color')
     detect_cloth_color = DetectClothColor()
+<<<<<<< HEAD
     rospy.spin()
+=======
+    rospy.spin()
+>>>>>>> 305736ddabd432bd203be16115c4a1c70884d532

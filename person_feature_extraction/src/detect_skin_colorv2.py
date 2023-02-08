@@ -164,4 +164,3 @@ if __name__ == '__main__':
     rospy.init_node('detect_skin_color')
     detect_cloth_color = DetectClothColor()
     rospy.spin()
-
