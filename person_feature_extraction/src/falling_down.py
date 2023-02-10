@@ -4,7 +4,11 @@
 import rospy
 from ros_openpose.msg import AltMarkerArray, Frame
 from std_msgs.msg import Float64
+<<<<<<< HEAD
 from happymimi_msgs.srv import SetStr ,SetFloat
+=======
+from happymimi_msgs.srv import SetStr, SetFloat
+>>>>>>> myoujin_branch
 from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorRequest
 
 class Falling_Down(object):
