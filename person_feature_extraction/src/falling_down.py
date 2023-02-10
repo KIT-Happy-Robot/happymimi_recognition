@@ -9,8 +9,8 @@ from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorR
 
 class Falling_Down(object):
     def __init__(self):
-        rospy.Service('/person_feature/height_estimation', SetFloat, self.main)
-        #rospy.Subscriber('/frame', Frame, self.openPoseCB)
+        rospy.Service('/person_feature/falling_down_person', SetFloat, self.main)
+        rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.position_estimate = rospy.ServiceProxy('/detect/depth', PositionEstimator)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
