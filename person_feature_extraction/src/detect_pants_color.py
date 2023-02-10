@@ -10,7 +10,7 @@ from ros_openpose.msg import Frame
 from cv_bridge import CvBridge, CvBridgeError
 from happymimi_msgs.srv import SetStr, SetStrResponse
 
-class DetectClothColor(object):
+class DetectPantsColor(object):
     def __init__(self):
         rospy.Service('/person_feature/pants_color', SetStr, self.main)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
@@ -28,9 +28,10 @@ class DetectClothColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        s, h, v = req
-        #print h, s, v
+        s, v, h = req
+        print(h, s, v)
         color = ''
+        
         if 0<=v and v<=79: color = 'Black'
         elif (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
         elif (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
@@ -47,7 +48,38 @@ class DetectClothColor(object):
         elif 137<=h and h<=159: color = 'Purple'
         elif 160<=h and h<=173: color = 'Pink'
         return color
-
+        '''
+        if 0<= v and v<= 50: 
+            color = 'Black'
+            return color
+        if 200<= v and v <= 255 :
+            color = 'White'
+            return color   #マスク着用
+        if (0<=s and s<=25) and (199<=v and v<=255):
+            color = 'White'
+            return color
+        elif 90 <= v and 199 <= v :
+            color = 'Gray'
+            return color
+        if (110<=h and h<=130) and (120<=s and s<=160):
+            color = 'Brown' #黒人
+            return color
+         #elif 110<=h and h<=130: color = 'Red'
+        if 100<=h and h<=110:
+            color = 'Orange' #Asia
+            return color
+        if (100<=h and h<= 120) and (120<=v and v<=150):
+            color = 'skin'
+            return color
+        if 75<=h and h<=99:
+            color = 'Yellow'#Asia
+            return color
+        elif 50<=h and h<=74: color = 'Green'
+        elif 0<=h and h<=20: color = 'Blue'
+        elif 137<=h and h<=159: color = 'Purple'
+        elif 120<=h and h<=135: color = 'Pink' #白人?
+        return color
+        '''
     def main(self, _):
         response = SetStrResponse()
 
@@ -80,59 +112,35 @@ class DetectClothColor(object):
         print("rankle_y",rankle_y)
         print("lankle_x",rankle_x)
         print("lankle_y",rankle_y)
-        '''
-        if (neck_x==0.0 and neck_y==0.0) and (hip_x==0.0 and hip_y==0.0):
-            return response
-        elif neck_x==0.0 and neck_y==0.0:
-            body_axis_x = hip_x-10
-            body_axis_y = hip_y
-            chest_length = 10
-        else:
-            body_axis_x = neck_x
-            body_axis_y = neck_y
-            if hip_x==0.0 and hip_y==0.0:
-                chest_length = int(479 - neck_x)
-            else:
-                chest_length = int(hip_x - neck_x)
-        if body_axis_x<0: body_axis_x=0
-        if body_axis_x>479: body_axis_x=479
-        if body_axis_y<0: body_axis_y=0
-        if body_axis_y>639: body_axis_y=639
-
-        if (r_shoulder_x==0.0 and r_shoulder_y==0.0) and (l_shoulder_x==0.0 and l_shoulder_y==0.0):
-            pass
-        elif r_shoulder_x==0.0 and r_shoulder_y==0.0:
-            width = int(l_shoulder_y - body_axis_y)
-        elif l_shoulder_x==0.0 and l_shoulder_y==0.0:
-            width = int(body_axis_y - r_shoulder_y)
-        else:
-            shoulder_width = l_shoulder_y - r_shoulder_y
-            width = int(shoulder_width/2)
-        '''
+        
         leg_length = int(rankle_x - rhip_x)
         leg_axis_x = int(rhip_x)
         leg_axis_y = int(rhip_y)
         width      = int(rhip_x - lhip_x)
         if width < 0:
             width = -1*width
+        
+        print("-----------------------")
+        print("leg_length", leg_length)
+        print("leg_axis_y",leg_axis_y)
+        print("leg_axis_x",leg_axis_x)
+        print("width", width)
+
+
         # 画像の変換
         image = CvBridge().imgmsg_to_cv2(self.image_res)
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
-<<<<<<< HEAD
         for i in range(leg_length):
-=======
-        for i in range(chest_length+1):
->>>>>>> 305736ddabd432bd203be16115c4a1c70884d532
             x = i
-            if x>479: continue
+            #if x>479: continue
             for j in range(width):
                 y = j
-                if y>639: continue
+                #if y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
-        #print(color_map)
+        print(color_map)
         count_l = collections.Counter(color_map)
         response.result = count_l.most_common()[0][0]
 
@@ -141,9 +149,5 @@ class DetectClothColor(object):
 
 if __name__ == '__main__':
     rospy.init_node('detect_cloth_color')
-    detect_cloth_color = DetectClothColor()
-<<<<<<< HEAD
+    detect_pants_color = DetectPantsColor()
     rospy.spin()
-=======
-    rospy.spin()
->>>>>>> 305736ddabd432bd203be16115c4a1c70884d532

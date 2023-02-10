@@ -10,13 +10,13 @@ from ros_openpose.msg import Frame
 from cv_bridge import CvBridge, CvBridgeError
 from happymimi_msgs.srv import SetStr, SetStrResponse
 
-class DetectClothColor(object):
+class DetectSkinColor(object):
     def __init__(self):
         rospy.Service('/person_feature/skin_color', SetStr, self.main)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         #実験用に首が動かないようにしている
-        #self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
+        self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
         self.image_res = Image()
         self.pose_res = Frame()
@@ -55,14 +55,28 @@ class DetectClothColor(object):
         elif 160<=h and h<=173: color = 'Pink'
         '''
         if 0<= v and v<= 50: color = 'Black'
-        if 200<= v and v <= 255 : color = 'White'#マスク着用
-        if (0<=s and s<=25) and (90<=v and v<=255): color = 'White'
-        if 90 <= v and 199 <= v : color = 'Gray'
-        if (110<=h and h<=130) and (120<=s and s<=160): color = 'Brown' #黒人
-        elif 110<=h and h<=130: color = 'Red'
-        if 100<=h and h<=110: color = 'Orange' #Asia
-        if (25<=h and h<= 40) and (20<=s and s<=35): color = 'skin'
-        if 75<=h and h<=99: color = 'Yellow'#Asia
+        if 200<= v and v <= 255 : 
+            color = 'White' 
+            return color   #マスク着用 
+        if (0<=s and s<=25) and (199<=v and v<=255): 
+            color = 'White' 
+            return color
+        elif 90 <= v and 199 <= v : 
+            color = 'Gray' 
+            return color
+        if (110<=h and h<=130) and (120<=s and s<=160): 
+            color = 'Brown' #黒人
+            rerun color
+        #elif 110<=h and h<=130: color = 'Red'
+        if 100<=h and h<=110: 
+            color = 'Orange' #Asia
+            retun color
+        if (100<=h and h<= 120) and (120<=v and v<=150): 
+            color = 'skin'
+            return color
+        if 75<=h and h<=99: 
+            color = 'Yellow'#Asia
+            return color
         elif 50<=h and h<=74: color = 'Green'
         elif 0<=h and h<=20: color = 'Blue'
         elif 137<=h and h<=159: color = 'Purple'
@@ -72,8 +86,8 @@ class DetectClothColor(object):
     def main(self, _):
         response = SetStrResponse()
 
-        #self.head_pub.publish(-20.0)
-        #rospy.sleep(2.5)
+        self.head_pub.publish(-20.0)
+        rospy.sleep(2.5)
 
         pose = self.pose_res
         if len(pose.persons)==0: return response
@@ -163,5 +177,5 @@ class DetectClothColor(object):
 
 if __name__ == '__main__':
     rospy.init_node('detect_skin_color')
-    detect_cloth_color = DetectClothColor()
+    detect_skin_color = DetectSkinColor()
     rospy.spin()
