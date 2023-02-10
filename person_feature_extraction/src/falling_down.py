@@ -26,21 +26,18 @@ class Falling_Down(object):
         #頭の位置を検出
         center_x = pose.persons[0].bodyParts[0].pixlel.y
         center_y = pose.persons[0].bodyParts[0].pixlel.x
-        print(center_x)
-        print(center_y)
+        rospy.loginfo("%s", center_x)
+        rospy.loginfo("%s", center_y)
 
         if center_x==0 and center_y==0:
             #右耳の位置の検出
             center_x = pose.persons[0].bodyParts[17].pixel.y
             center_y = pose.persons[0].bodyParts[17].pixel.x
-            print(center_x)
-            print(center_y)
+
             if center_x==0 and center_y==0:
                 #左耳の位置の検出
                 center_x = pose.persons[0].bodyParts[18].pixel.y
                 center_y = pose.persons[0].bodyParts[18].pixel.x
-                print(center_x)
-                print(center_Y)
 
 
         rospy.wait_for_service('/detect/depth')
