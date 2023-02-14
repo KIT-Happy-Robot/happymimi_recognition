@@ -4,13 +4,13 @@
 import rospy
 from ros_openpose.msg import AltMarkerArray, Frame
 from std_msgs.msg import Float64
-from happymimi_msgs.srv import SetStr, SetFloat, SetFloatResponse
+from happymimi_msgs.srv import SetStr, SetFloat, SetFloatResponse, SingmpleTrg.srv
 from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorRequest
 
 class Falling_Down(object):
     def __init__(self):
-        rospy.Service('/person_feature/height_estimation', SetFloat, self.main)
-        #rospy.Subscriber('/frame', Frame, self.openPoseCB)
+        rospy.Service('/person_feature/falling_down_recognition', SetFloat, self.main)
+        rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.position_estimate = rospy.ServiceProxy('/detect/depth', PositionEstimator)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
@@ -21,8 +21,9 @@ class Falling_Down(object):
 
     def main(self, _):
         fall = SetFloatResponse(data=-1)
-        self.head_pub.publish(25.0)
+        self.head_pub.publish(-25.0)
         rospy.sleep(2.5)
+        rospy.loginfo("test") #デバッグ用
 
         pose = self.pose_res
         if len(pose.persons)==0: return fall
