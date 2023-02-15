@@ -4,60 +4,61 @@
 import rospy
 from ros_openpose.msg import AltMarkerArray, Frame
 from std_msgs.msg import Float64
-from happymimi_msgs.srv import SetStr, SetFloat, SetFloatResponse
+from happymimi_msgs.srv import SetStr, SetFloat, SetFloatResponse, SimpleTrg, SimpleTrgResponse
 from happymimi_recognition_msgs.srv import PositionEstimator, PositionEstimatorRequest
 
-class Falling_Down(object):
+class FallingDown(object):
     def __init__(self):
         rospy.Service('/person_feature/falling_down_person', SetFloat, self.main)
+        rospy.Service('/person_feature/falling_down_recognition', SimpleTrg, self.main)
         rospy.Subscriber('/frame', Frame, self.openPoseCB)
         self.position_estimate = rospy.ServiceProxy('/detect/depth', PositionEstimator)
-        self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
+        #self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
 
         self.pose_res = Frame()
 
     def openPoseCB(self, res):
         self.pose_res = res
 
-    def main(self, _):
-        fall = SetFloatResponse(data=-1)
-        self.head_pub.publish(25.0)
+    def main(self, req):
+        fall = SimpleTrgResponse()
+        fall = False
+        #self.head_pub.publish(-25.0)
         rospy.sleep(2.5)
+        #rospy.loginfo("test") #デバッグ用
 
         pose = self.pose_res
+        rospy.loginfo(pose.persons)
         if len(pose.persons)==0: return fall
 
         #頭の位置を検出
-        center_x = pose.persons[0].bodyParts[0].pixlel.y
-        center_y = pose.persons[0].bodyParts[0].pixlel.x
-        #rospy.loginfo("%s", center_x)
-        #rospy.loginfo("%s", center_y)
+        center_x_head = pose.persons[0].bodyParts[0].pixel.y
+        center_y_head = pose.persons[0].bodyParts[0].pixel.x
+        print(center_x_head, center_y_head)
 
-        if center_x==0 and center_y==0:
-            #右耳の位置の検出
-            center_x = pose.persons[0].bodyParts[17].pixel.y
-            center_y = pose.persons[0].bodyParts[17].pixel.x
+        if (center_x_head == 0) and (center_y_head==0):
+            fall = False
 
-            if center_x==0 and center_y==0:
-                #左耳の位置の検出
-                center_x = pose.persons[0].bodyParts[18].pixel.y
-                center_y = pose.persons[0].bodyParts[18].pixel.x
-                #推定がうまく行かなかった場合再度推定を行う
-                if center_x==0 and center_y==0:
-                    return fall
+        else:
+            fall = True
+        #右腰の位置の検出
+        #center_x_rhip = pose.persons[0].bodyParts[9].pixel.y
+        #center_y_rhip = pose.persons[0].bodyParts[9].pixel.x
+        #print(center_x_rhip, center_y_rhip) 
+
+        #if (center_x_rhip==0) and (center_y_rhip==0):
+        #    #左腰の位置の検出
+        #    center_x_lhip = pose.persons[0].bodyParts[12].pixel.y
+        #    center_y_lhip = pose.persons[0].bodyParts[12].pixel.x
+        #    print(center_x_lhip, ceter_y_lhip)
+
 
         rospy.wait_for_service('/detect/depth')
-        p_e_req = PositionEstimatorRequest()
-        p_e_req.center_x = int(center_x)
-        p_e_req.center_y = int(center_y)
-        p_e_res = self.position_estimate(p_e_req).point
 
-        height.data = p_e_rest.z*100 + 30
-        print(p_e_rst.z*100)
         return fall 
 
 
 if __name__ == '__main__':
     rospy.init_node('Falling_Down')
-    falling_down = Falling_Down()
+    FD = FallingDown()
     rospy.spin()
