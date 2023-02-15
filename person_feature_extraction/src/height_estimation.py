@@ -26,35 +26,27 @@ class HeightEstimation(object):
         rospy.sleep(2.5)
         
         pose = self.pose_res
-<<<<<<< HEAD
         if len(pose.persons)==0: return height
-=======
         if len(pose.persons)==0: return height#検知しない場合-1を返す
 
->>>>>>> 305736ddabd432bd203be16115c4a1c70884d532
         #鼻の位置を検出
         center_x = pose.persons[0].bodyParts[0].pixel.y
         center_y = pose.persons[0].bodyParts[0].pixel.x
         if center_x==0 and center_y==0:
-<<<<<<< HEAD
             #右目の検出
             center_x = pose.persons[0].bodyParts[15].pixel.y
             center_y = pose.persons[0].bodyParts[15].pixel.x
             if center_x==0 and center_y==0:
                 #左目の検出
-=======
-            #右目の位置の検出
-            center_x = pose.persons[0].bodyParts[15].pixel.y
-            center_y = pose.persons[0].bodyParts[15].pixel.x
+                center_x = pose.persons[0].bodyParts[15].pixel.y
+                center_y = pose.persons[0].bodyParts[15].pixel.x
             if center_x==0 and center_y==0:
                 #左目の位置の検出
->>>>>>> 305736ddabd432bd203be16115c4a1c70884d532
                 center_x = pose.persons[0].bodyParts[16].pixel.y
                 center_y = pose.persons[0].bodyParts[16].pixel.x
                 #身長の推定がうまく行きそうにない場合、再度推定を行う
                 if center_x==0 and center_y==0:
                     return height
-<<<<<<< HEAD
                 
         #if center_x<0: return height
         #if center_x>479: return height
@@ -64,16 +56,14 @@ class HeightEstimation(object):
         print(center_x,center_y)
         #print(lheel_x,lheel_y)
         #print(lheel_x - center_x)
-=======
         
         #身長の推定がうまく行きそうにない場合、再度推定を行う
-        if center_x<0: center_x=0 return height
+        if center_x<0 and  center_x=0 return height
         if center_x>479: center_x=479 return height
         if center_y<0: center_y=0 return height
         if center_y>639: center_y=639 return height
 
 
->>>>>>> 305736ddabd432bd203be16115c4a1c70884d532
         rospy.wait_for_service('/detect/depth')
         p_e_req = PositionEstimatorRequest()
         p_e_req.center_x = int(center_x)

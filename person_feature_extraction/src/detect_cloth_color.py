@@ -106,10 +106,10 @@ class DetectClothColor(object):
         color_map = ['']
         for i in range(chest_length+1):
             x = body_axis_x + i
-            if x<0 or x>479: continue
+            #if x<0 or x>479: continue
             for j in range(-width, width):
                 y = body_axis_y + j
-                if y<0 or y>639: continue
+                #if y<0 or y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
         print(color_map)

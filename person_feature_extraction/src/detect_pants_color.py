@@ -28,7 +28,7 @@ class DetectPantsColor(object):
 
     def judgeColor(self, req):
         # hsv色空間で色の判定
-        s, v, h = req
+        h,s,v = req
         print(h, s, v)
         color = ''
         
@@ -86,8 +86,8 @@ class DetectPantsColor(object):
         #ここを下側に向けたい
         #ズボンの色を検出したいから
         #hipとankleが見えればおけ
-        self.head_pub.publish(-20.0)
-        rospy.sleep(2.5)
+        #self.head_pub.publish(-20.0)
+        #rospy.sleep(2.5)
 
         pose = self.pose_res
         if len(pose.persons)==0: return response
@@ -133,10 +133,10 @@ class DetectPantsColor(object):
 
         color_map = ['']
         for i in range(leg_length):
-            x = i
+            x = i + leg_axis_x
             #if x>479: continue
             for j in range(width):
-                y = j
+                y = j + leg_axis_y
                 #if y>639: continue
                 color = self.judgeColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
@@ -150,4 +150,5 @@ class DetectPantsColor(object):
 if __name__ == '__main__':
     rospy.init_node('detect_cloth_color')
     detect_pants_color = DetectPantsColor()
+    print("start")
     rospy.spin()

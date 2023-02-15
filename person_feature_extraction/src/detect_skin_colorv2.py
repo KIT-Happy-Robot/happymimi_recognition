@@ -66,11 +66,11 @@ class DetectSkinColor(object):
             return color
         if (110<=h and h<=130) and (120<=s and s<=160): 
             color = 'Brown' #黒人
-            rerun color
+            return color
         #elif 110<=h and h<=130: color = 'Red'
         if 100<=h and h<=110: 
             color = 'Orange' #Asia
-            retun color
+            return color
         if (100<=h and h<= 120) and (120<=v and v<=150): 
             color = 'skin'
             return color
