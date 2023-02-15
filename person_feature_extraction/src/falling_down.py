@@ -54,6 +54,12 @@ class FallingDown(object):
 
 
         rospy.wait_for_service('/detect/depth')
+        head_z_req = PositionEstimatorRequest()
+        head_z_req.center_x = int(center_x_head)
+        head_z_req.center_y = int(center_y_head)
+        head_z_res = self.position_estimate(head_z_req).point
+        print(head_z_res)
+        
 
         return fall 
 
