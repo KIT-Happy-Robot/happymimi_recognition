@@ -58,7 +58,9 @@ class FallingDown(object):
         head_z_req.center_x = int(center_x_head)
         head_z_req.center_y = int(center_y_head)
         head_z_res = self.position_estimate(head_z_req).point
-        print(head_z_res)
+        print(head_z_res.z)
+        print(head_z_res.x)
+        print(head_z_res.y)
         
 
         return fall 
