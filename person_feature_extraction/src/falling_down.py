@@ -60,6 +60,11 @@ class FallingDown(object):
         head_z_res = self.position_estimate(head_z_req).point
         print(head_z_res)
 
+        print(head_z_res.z)
+        print(head_z_res.x)
+        print(head_z_res.y)
+        
+>>>>>>> 9328f4628cf6de0d3df46ee9593bddfaa7a95fef
 
         return fall 
 
