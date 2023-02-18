@@ -34,7 +34,7 @@ class FallingDown(object):
         #頭の位置を検出
         center_x_head = pose.persons[0].bodyParts[0].pixel.y
         center_y_head = pose.persons[0].bodyParts[0].pixel.x
-        print(center_x_head, center_y_head)
+        #print(center_x_head, center_y_head)
 
         if (center_x_head == 0) and (center_y_head==0):
             fall = False
@@ -58,13 +58,7 @@ class FallingDown(object):
         head_z_req.center_x = int(center_x_head)
         head_z_req.center_y = int(center_y_head)
         head_z_res = self.position_estimate(head_z_req).point
-        print(head_z_res)
-
-        print(head_z_res.z)
-        print(head_z_res.x)
-        print(head_z_res.y)
-        
->>>>>>> 9328f4628cf6de0d3df46ee9593bddfaa7a95fef
+        print(head_z_res.z*100)
 
         return fall 
 
