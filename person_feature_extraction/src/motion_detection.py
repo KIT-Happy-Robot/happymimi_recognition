@@ -41,8 +41,9 @@ class ditection():
                         continue
                     cv2.rectangle(frame,(x,y),(x+w,y+h),self.colour,2)
                     self.count += 1
-                    print('検知しました{}'.format(self.count))
-                    print("結果:",motion_dt.result())
+                    if count > 20:
+                        print('検知しました{}'.format(self.count))
+
 
                 #ウィンドウで表示
                 cv2.imshow('target_frame',frame)
