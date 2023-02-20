@@ -15,6 +15,7 @@ class ditection():
 
     #main関数
     def motion(self):
+        res = MotionBoolResponse()
         rospy.wait_for_service('motion_dt')
         try:
             while True:
@@ -43,6 +44,7 @@ class ditection():
                     self.count += 1
                     if count > 20:
                         print('検知しました{}'.format(self.count))
+                        return res.result == True
 
 
                 #ウィンドウで表示
