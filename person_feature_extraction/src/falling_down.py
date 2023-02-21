@@ -53,8 +53,12 @@ class FallingDown(object):
 =======
         center_x_head = pose.persons[0].bodyParts[0].pixel.y
         center_y_head = pose.persons[0].bodyParts[0].pixel.x
+<<<<<<< HEAD
         print(center_x_head, center_y_head)
 >>>>>>> 9328f4628cf6de0d3df46ee9593bddfaa7a95fef
+=======
+        #print(center_x_head, center_y_head)
+>>>>>>> 6497171400f6dd96d2723fe32931fc628c5b6886
 
         if (center_x_head == 0) and (center_y_head==0):
             fall = False
@@ -90,10 +94,7 @@ class FallingDown(object):
         head_z_req.center_x = int(center_x_head)
         head_z_req.center_y = int(center_y_head)
         head_z_res = self.position_estimate(head_z_req).point
-        print(head_z_res.z)
-        print(head_z_res.x)
-        print(head_z_res.y)
-        
+        print(head_z_res.z*100)
 
         return fall 
 
