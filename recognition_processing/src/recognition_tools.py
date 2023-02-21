@@ -273,6 +273,7 @@ class RecognitionTools(object):
             if not(row[1].x is numpy.nan) and row[1].x > 0.1:
                 response_list.append(row[1])
         response_centroid.points = response_list
+        print(response_centroid)
         return response_centroid
 
 
