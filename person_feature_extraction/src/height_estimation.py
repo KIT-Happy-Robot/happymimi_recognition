@@ -44,7 +44,7 @@ class HeightEstimation(object):
         
         #身長の推定がうまく行きそうにない場合、再度推定を行う
         if center_x<0: center_x=0 return height
-        if center_x>479: center_x=479 return height
+        if center_x>479: center_x=470 return height
         if center_y<0: center_y=0 return height
         if center_y>639: center_y=639 return height
 
