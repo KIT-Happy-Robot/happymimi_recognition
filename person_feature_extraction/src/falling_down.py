@@ -58,8 +58,11 @@ class FallingDown(object):
         head_z_req.center_y = int(center_y_head)
         head_z_res = self.position_estimate(head_z_req).point
         print(head_z_res.z*100)
+<<<<<<< HEAD
 
         
+=======
+>>>>>>> 5c16e65b8bd58547d3c453b5360d8ef3f742a3a4
 
         return fall 
 
