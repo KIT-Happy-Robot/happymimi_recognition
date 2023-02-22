@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from mimi_motion_detection.srv import *
+from MotionBool.srv import *
 import cv2
 import rospy
 import sys
 
-class ditection():
+class detection():
     def __init__(self):
         self.cap = cv2.VideoCapture(0)  #カメラの設定（パソコン内蔵カメラは「0」）
         self.before = None              #画像の比較（1つ前の画像）
@@ -49,15 +49,15 @@ class ditection():
                 
                 
                 print('検知しました{}'.format(count))
-                if count > 20:
+                if req.count > 20:
                     print('result:{}'.format(res.result))
                     cv2.destroyAllWindows()
                     return res.result
 
             #ウィンドウで表示
             cv2.imshow('target_frame',frame)
-            cv2.waitKey(1) 
+            #cv2.waitKey(1)
 
 if __name__ == '__main__':
-    d = ditection()
+    d = detection()
     d.motion_detection_server()
