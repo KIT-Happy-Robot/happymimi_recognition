@@ -22,6 +22,7 @@ class FallingDown(object):
     def main(self, req):
         fall = SimpleTrgResponse()
         fall = False
+        head_z = SetFloatResponse(data=-1)
         #self.head_pub.publish(-25.0)
         rospy.sleep(2.5)
         #rospy.loginfo("test") #デバッグ用
@@ -35,11 +36,11 @@ class FallingDown(object):
         center_y_head = pose.persons[0].bodyParts[0].pixel.x
         #print(center_x_head, center_y_head)
 
-        if (center_x_head == 0) and (center_y_head==0):
-            fall = False
+        #if (center_x_head == 0) and (center_y_head==0):
+            #fall = False
 
-        else:
-            fall = True
+        #else:
+            #fall = True
         #右腰の位置の検出
         #center_x_rhip = pose.persons[0].bodyParts[9].pixel.y
         #center_y_rhip = pose.persons[0].bodyParts[9].pixel.x
@@ -57,7 +58,8 @@ class FallingDown(object):
         head_z_req.center_x = int(center_x_head)
         head_z_req.center_y = int(center_y_head)
         head_z_res = self.position_estimate(head_z_req).point
-        print(head_z_res.z*100)
+        head_z.data = head_z_res.z*100
+        rospy.loginfo(head_z_res.z)
 
         return fall.result
 
