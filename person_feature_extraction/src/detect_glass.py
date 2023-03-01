@@ -12,17 +12,17 @@ import pyautogui
 import rospy
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float64
-from happymimi_msgs.srv import SetStr, SetStrResponse
-
+#from happymimi_msgs.srv import SetStr, SetStrResponse
+from happymimi_msgs.srv import StrToStr, StrToStrResponse
 
 class DetectGlass(object):
     def __init__(self):
-        rospy.Service('/person_feature/glass', SetStr, self.face_detection)
+        self.srv = rospy.Service('/person_feature/glass', StrToStr, self.face_detection)
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
         
-        self.API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        self.API_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        self.API_KEY = "YMdjJTAjw58SIJeuiPvj-tkp35GQUHya"
+        self.API_SECRET = "dU1mXNRiGuCk_SKqYPrq4cVncps6HD9h"
         self.file_path = "screenshot.jpg"
         self.savefile = "result"
 
@@ -34,12 +34,19 @@ class DetectGlass(object):
         json_open = open(self.savefile+".json", 'r')
         json_load = json.load(json_open)
         print(json_load["faces"][0]["attributes"]["glass"]["value"])    
+        print(json_load["faces"][0]["attributes"]["mouthstatus"]["surgical_mask_or_respirator"])
+        
+        result_mask = json_load["faces"][0]["attributes"]["mouthstatus"]["surgical_mask_or_respirator"]
+        result_glass = json_load["faces"][0]["attributes"]["glass"]["value"]
 
-        result = json_load["faces"][0]["attributes"]["glass"]["value"]
-        return result
+        if result_mask > 0.0:result_mask = True
+        else: result_mask = False
+        
+
+        return result_glass, result_mask
         
     def face_detection(self, _):
-        response = SetStrResponse()
+        response = StrToStrResponse()
 
         #画像の取得
         s = pyautogui.screenshot()
@@ -82,7 +89,7 @@ class DetectGlass(object):
         
         response.result = self.parameter_read(self.savefile)
         
-        return response
+        return response.result
 
 if __name__ == '__main__':
     rospy.init_node('detect_glass')
