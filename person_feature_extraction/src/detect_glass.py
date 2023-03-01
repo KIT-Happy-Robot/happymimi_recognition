@@ -21,8 +21,8 @@ class DetectGlass(object):
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size=1)
         
-        self.API_KEY = "YMdjJTAjw58SIJeuiPvj-tkp35GQUHya"
-        self.API_SECRET = "dU1mXNRiGuCk_SKqYPrq4cVncps6HD9h"
+        self.API_KEY = ""
+        self.API_SECRET = ""
         self.file_path = "screenshot.jpg"
         self.savefile = "result"
 
