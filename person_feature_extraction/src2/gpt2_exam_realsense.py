@@ -24,11 +24,22 @@ class Person_extract(object):
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         self.bridge = CvBridge()
         # テキスト考案中...
-        self.label_cloth_color = ["person dressed in white", "person dressed in red"]
+        self.label_cloth_color = ["person dressed in white", "person dressed in red",
+                                  "person dressed in blue","person dressed in black",
+                                  "person dressed in glay","person dressed in brown",
+                                  "person dressed in orange", "person dressed in yellow",
+                                  "person dressed in green","person dressed in purple",
+                                  "person dressed in pink"]
+        
         self.label_pants_color = ["person wearing white pants", "person wearing black pants"]
+        
+        self.label_hair_color = ["dark-haired person","white-haired person",
+                                 "person with brown hair","red-haired person"]
         #取り敢えず試験用に特徴量２つ
         self.label_gender = ["a photo of a man", "a photo of a woman"]
         self.label_glass = ["a photo of a man wearing glass", "a photo of a man without glasses"]
+
+    
     
     def realsenseCB(self, res):
         self.image_res = res
@@ -64,12 +75,44 @@ class Person_extract(object):
         
         return self.label_glass[predicted_class_idx]
     
+    def extract_cloth_color(self):
+        image = self.bridge.imgmsg_to_cv2(self.image_res)
+        inputs_glass = processor(text=self.label_cloth_color, images=image,
+                        return_tensors="pt", padding=True)
+        
+        outputs_gender = model(**inputs_glass)
+        logits_per_image = outputs_gender.logits_per_image
+        probs = logits_per_image.softmax(dim=1)
+        predicted_class_idx = probs.argmax(-1).item()
+        print("--------------------------------------------")
+        print("class:",self.label_glass[predicted_class_idx])
+        print("score:", probs)
+    
+        return self.label_cloth_color[predicted_class_idx]
+    
+    def extract_pants_color(self):
+        image = self.bridge.imgmsg_to_cv2(self.image_res)
+        inputs_glass = processor(text=self.label_pants_color, images=image,
+                        return_tensors="pt", padding=True)
+        
+        outputs_gender = model(**inputs_glass)
+        logits_per_image = outputs_gender.logits_per_image
+        probs = logits_per_image.softmax(dim=1)
+        predicted_class_idx = probs.argmax(-1).item()
+        print("--------------------------------------------")
+        print("class:",self.label_pants_color[predicted_class_idx])
+        print("score:", probs)
+    
+        return self.label_pants_color[predicted_class_idx]
+    
     def main(self, request):
         #response = SetStrResponse()
         data = request.data
         response = ClipResponse()
         if data == "gender":response.result = str(self.extract_gender())
         elif data == "glass":response.result = str(self.extract_glass())
+        elif data == "cloth" :response.result = str(self.extract_cloth_color())
+        elif data == "pants":response.result = str(self.extract_pants_color())
         elif data == "":
             rospy.loginfo("no select data")
             response.result = "False"
