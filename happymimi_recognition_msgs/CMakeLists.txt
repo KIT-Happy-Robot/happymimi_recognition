@@ -27,6 +27,8 @@ add_service_files(
   RecognitionLocalize.srv
   MultipleLocalize.srv
   PositionEstimator.srv
+
+  Clip.srv
 )
 
 ## Generate actions in the 'action' folder
