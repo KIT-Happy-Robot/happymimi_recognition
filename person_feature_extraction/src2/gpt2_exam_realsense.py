@@ -105,6 +105,21 @@ class Person_extract(object):
     
         return self.label_pants_color[predicted_class_idx]
     
+    def extract_hair_color(self):
+        image = self.bridge.imgmsg_to_cv2(self.image_res)
+        inputs_glass = processor(text=self.label_hair_color, images=image,
+                        return_tensors="pt", padding=True)
+        
+        outputs_gender = model(**inputs_glass)
+        logits_per_image = outputs_gender.logits_per_image
+        probs = logits_per_image.softmax(dim=1)
+        predicted_class_idx = probs.argmax(-1).item()
+        print("--------------------------------------------")
+        print("class:",self.label_hair_color[predicted_class_idx])
+        print("score:", probs)
+    
+        return self.label_hair_color[predicted_class_idx]
+    
     def main(self, request):
         #response = SetStrResponse()
         data = request.data
@@ -113,6 +128,7 @@ class Person_extract(object):
         elif data == "glass":response.result = str(self.extract_glass())
         elif data == "cloth" :response.result = str(self.extract_cloth_color())
         elif data == "pants":response.result = str(self.extract_pants_color())
+        elif data == "hair":response.result = str(self.extract_hair_color())
         elif data == "":
             rospy.loginfo("no select data")
             response.result = "False"
