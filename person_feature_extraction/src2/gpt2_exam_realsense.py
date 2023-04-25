@@ -85,7 +85,7 @@ class Person_extract(object):
         probs = logits_per_image.softmax(dim=1)
         predicted_class_idx = probs.argmax(-1).item()
         print("--------------------------------------------")
-        print("class:",self.label_glass[predicted_class_idx])
+        print("class:",self.label_cloth_color[predicted_class_idx])
         print("score:", probs)
     
         return self.label_cloth_color[predicted_class_idx]
