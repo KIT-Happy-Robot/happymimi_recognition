@@ -24,12 +24,12 @@ class Person_extract(object):
         rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
         self.bridge = CvBridge()
         # テキスト考案中...
-        self.label_cloth_color = ["person dressed in white", "person dressed in red",
-                                  "person dressed in blue","person dressed in black",
-                                  "person dressed in glay","person dressed in brown",
-                                  "person dressed in orange", "person dressed in yellow",
-                                  "person dressed in green","person dressed in purple",
-                                  "person dressed in pink"]
+        self.label_cloth_color = ["person wearing white clothes", "person wearing red clothes",
+                                  "person wearing blue clothes","person wearing black clothes",
+                                  "person wearing glay clothes","person wearing brown clothes",
+                                  "person wearing orange clothes", "person wearing yellow clothes",
+                                  "person wearing green clothes","person wearing purple clothes",
+                                  "person wearing pink clothes"]
         
         self.label_pants_color = ["person wearing white pants", "person wearing black pants"]
         
@@ -37,7 +37,7 @@ class Person_extract(object):
                                  "person with brown hair","red-haired person"]
         #取り敢えず試験用に特徴量２つ
         self.label_gender = ["a photo of a man", "a photo of a woman"]
-        self.label_glass = ["a photo of a man wearing glass", "a photo of a man without glasses"]
+        self.label_glass = ["a photo of a person wearing glasses", "a photo of a person not wearing glasses"]
 
     
     
