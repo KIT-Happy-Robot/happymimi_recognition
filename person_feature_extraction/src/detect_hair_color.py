@@ -10,6 +10,7 @@ from ros_openpose.msg import Frame
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import matplotlib as plt
+import mimi_color
 
 from happymimi_msgs.srv import SetStr, SetStrResponse
 
@@ -28,29 +29,6 @@ class DetectClothColor(object):
 
     def openPoseCB(self, res):
         self.pose_res = res
-
-    def judgeColor(self, req):
-        # hsv色空間で色の判定
-        h, s, v = req
-        #s, h, v = req
-        #print h, s, v
-        color = ''
-        if 0<=v and v<=79: color = 'Black'
-        if (0<=s and s<=50) and (190<=v and v<=255): color = 'White'
-        if (0<=s and s<=50) and (80<=v and v<=130): color = 'Gray'
-        #elif (50 <= s and s <= 170) and (70 <= v and v <= 150): color = 'Gray'
-        #elif (50<=s and s<=170) and (80<=v and v<=90): color = 'Gray'
-        #elif (0<=s and s<=50) and (80<=v and v<=230): color = 'Gray'
-        #elif (5<=h and h<=18) and (20<=s and s<=240) and (70<=v and v<=180): color = 'Brown'
-        elif (5<=h and h<=18) and v<=200: color = 'Brown'
-        elif (0<=h and h<=4) or (174<=h and h<=180): color = 'Red'
-        elif 5<=h and h<=18: color = 'Orange'
-        elif 20<=h and h<=39: color = 'Yellow'
-        elif 40<=h and h<=89: color = 'Green'
-        elif 180<=h and h<=240: color = 'Blue'
-        elif 137<=h and h<=159: color = 'Purple'
-        elif 160<=h and h<=173: color = 'Pink'
-        return color
         
     def main(self, _):
         response = SetStrResponse()
@@ -94,13 +72,16 @@ class DetectClothColor(object):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         color_map = ['']
+
+        disColor = mimi_color.DetectColor()
+
         for i in range(face_length):
             x = i 
             if 0<x and x>479:continue
             for j in range(width):
                 y = j 
                 if y>639:continue
-                color = self.judgeColor(hsv_image[int(x), int(y)])
+                color = disColor.detectColor(hsv_image[int(x), int(y)])
                 color_map.append(color)
         print(color_map)
         count_l = collections.Counter(color_map)
