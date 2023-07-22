@@ -29,6 +29,7 @@ add_service_files(
   PositionEstimator.srv
 
   Clip.srv
+  ITT.srv
 )
 
 ## Generate actions in the 'action' folder
