@@ -35,10 +35,17 @@ class Person_extract(object):
         
         self.label_hair_color = ["dark-haired person","white-haired person",
                                  "person with brown hair","red-haired person"]
-        #取り敢えず試験用に特徴量２つ
+        
         self.label_gender = ["a photo of a man", "a photo of a woman"]
         self.label_glass = ["a photo of a person wearing glasses", "a photo of a person not wearing glasses"]
 
+        self.label_age = ["This person appears to be in his/her 10s.",
+                          "This person appears to be in his/her 20s.",
+                          "This person appears to be in his/her 30s.",
+                          "This person appears to be in his/her 40s.",
+                          "This person appears to be in his/her 50s.",
+                          "This person appears to be in his/her 60s.",
+                          "This person appears to be in his/her 70s."]
     
     
     def realsenseCB(self, res):
@@ -77,11 +84,11 @@ class Person_extract(object):
     
     def extract_cloth_color(self):
         image = self.bridge.imgmsg_to_cv2(self.image_res)
-        inputs_glass = processor(text=self.label_cloth_color, images=image,
+        inputs_cloth = processor(text=self.label_cloth_color, images=image,
                         return_tensors="pt", padding=True)
         
-        outputs_gender = model(**inputs_glass)
-        logits_per_image = outputs_gender.logits_per_image
+        outputs_cloth = model(**inputs_cloth)
+        logits_per_image = outputs_cloth.logits_per_image
         probs = logits_per_image.softmax(dim=1)
         predicted_class_idx = probs.argmax(-1).item()
         print("--------------------------------------------")
@@ -92,11 +99,11 @@ class Person_extract(object):
     
     def extract_pants_color(self):
         image = self.bridge.imgmsg_to_cv2(self.image_res)
-        inputs_glass = processor(text=self.label_pants_color, images=image,
+        inputs_pants = processor(text=self.label_pants_color, images=image,
                         return_tensors="pt", padding=True)
         
-        outputs_gender = model(**inputs_glass)
-        logits_per_image = outputs_gender.logits_per_image
+        outputs_pants = model(**inputs_pants)
+        logits_per_image = outputs_pants.logits_per_image
         probs = logits_per_image.softmax(dim=1)
         predicted_class_idx = probs.argmax(-1).item()
         print("--------------------------------------------")
@@ -107,11 +114,11 @@ class Person_extract(object):
     
     def extract_hair_color(self):
         image = self.bridge.imgmsg_to_cv2(self.image_res)
-        inputs_glass = processor(text=self.label_hair_color, images=image,
+        inputs_hair = processor(text=self.label_hair_color, images=image,
                         return_tensors="pt", padding=True)
         
-        outputs_gender = model(**inputs_glass)
-        logits_per_image = outputs_gender.logits_per_image
+        outputs_hair = model(**inputs_hair)
+        logits_per_image = outputs_hair.logits_per_image
         probs = logits_per_image.softmax(dim=1)
         predicted_class_idx = probs.argmax(-1).item()
         print("--------------------------------------------")
@@ -119,6 +126,22 @@ class Person_extract(object):
         print("score:", probs)
     
         return self.label_hair_color[predicted_class_idx]
+    
+    def extract_age(self):
+        image = self.bridge.imgmsg_to_cv2(self.image_res)
+        inputs_age = processor(text=self.label_hair_color, images=image,
+                        return_tensors="pt", padding=True)
+        
+        outputs_age = model(**inputs_age)
+        logits_per_image = outputs_age.logits_per_image
+        probs = logits_per_image.softmax(dim=1)
+        predicted_class_idx = probs.argmax(-1).item()
+        print("--------------------------------------------")
+        print("class:",self.label_age[predicted_class_idx])
+        print("score:", probs)
+    
+        return self.label_age[predicted_class_idx]
+    
     
     def main(self, request):
         #response = SetStrResponse()
@@ -129,6 +152,7 @@ class Person_extract(object):
         elif data == "cloth" :response.result = str(self.extract_cloth_color())
         elif data == "pants":response.result = str(self.extract_pants_color())
         elif data == "hair":response.result = str(self.extract_hair_color())
+        elif data == "age":response.result = str(self.extract_age())
         elif data == "":
             rospy.loginfo("no select data")
             response.result = "False"
