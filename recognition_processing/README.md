@@ -132,7 +132,7 @@ YOLOで検出した物体の一覧を取得するモジュール
 # depthMask
 指定した距離（0.3~3.0）[m]以上の距離がある場合はマスク処理を行い黒塗りする。その結果の画像を送る。(Realsenseの性能に準拠(D435))
 
-`from recognition_processing import depth_meter`
+`from happymimi_recognition_msgs.srv import depth_meter`
 
 initに次を記入
 
