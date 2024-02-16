@@ -27,6 +27,7 @@ add_service_files(
   RecognitionLocalize.srv
   MultipleLocalize.srv
   PositionEstimator.srv
+  depth_meter.srv
 
   Clip.srv
   ITT.srv
