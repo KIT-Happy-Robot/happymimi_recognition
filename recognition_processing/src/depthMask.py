@@ -6,7 +6,7 @@ from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 import rospy
 import numpy as np
-from mimi_motion_detection.srv import depth_meter,depth_meterResponse
+from happymimi_recognition_msgs.srv import depth_meter,depth_meterResponse
 
 
 #以下でlaunchを起動する必要あり
