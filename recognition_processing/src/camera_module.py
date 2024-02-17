@@ -11,12 +11,16 @@ import numpy as np
 #from ultralytics import YOLO
 #model = YOLO('yolov8n-seg.pt')
 
+#矩形の座標を保存
+box = None
+
 class Camera_Module(object):
+    
     def __init__(self):
         self.bridge = CvBridge()
         rospy.Subscriber('/camera/color/image_raw',Image, self.camera_func)
         #rospy.Subscriber()
-        self.pub_data = rospy.Publisher('/camera/color/pub_data', Image, queue_size=10)
+        self.pub_data = rospy.Publisher('/camera/color/pub_data', Image, queue_size=1)
         
         # 四角形の面積の閾値
         self.min_area_threshold = 1500
@@ -31,7 +35,7 @@ class Camera_Module(object):
         return (list(approx[0][0]), list(approx[2][0])) #左上,右下  
     
     def camera_func(self,data):
-        
+        global box
         color_data = self.bridge.imgmsg_to_cv2(data,"bgr8")
         # 画像をグレースケールに変換
         gray = cv2.cvtColor(color_data, cv2.COLOR_BGR2GRAY)
@@ -47,22 +51,24 @@ class Camera_Module(object):
 
         # 最大の輪郭を取得
         max_contour = max(contours, key=cv2.contourArea)
-
+        if len(max_contour) <= 150:
+            box = max_contour
+        
         # 最大輪郭を用いて平面を検出
         #for contour in contours:
-        if self.is_quadrilateral(max_contour):
-            img_draw = cv2.drawContours(result_frame, [max_contour], 0, (0, 255, 0), 2)
+        if self.is_quadrilateral(box):
+            img_draw = cv2.drawContours(result_frame, [box], 0, (0, 255, 0), 2)
             
+        try:
+            # 左上,右下点の座標を取得して表示
+            point = self.get_top_left_point_and_bottom_right(box)
+        except IndexError:
+            point = [[0,0],[0,0]]
+           
         try:
             img_data = self.bridge.cv2_to_imgmsg(img_draw, encoding='bgr8')
         except UnboundLocalError:
             img_data = self.bridge.cv2_to_imgmsg(color_data, encoding='bgr8')
-         
-        try:
-            # 左上,右下点の座標を取得して表示
-            point = self.get_top_left_point_and_bottom_right(max_contour)
-        except IndexError:
-            point = [[0,0],[0,0]]
         
         print(point) 
         self.pub_data.publish(img_data)
