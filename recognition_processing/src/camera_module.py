@@ -13,6 +13,7 @@ import numpy as np
 
 #矩形の座標を保存
 box = None
+box_cnt = 0
 
 class Camera_Module(object):
     
@@ -26,16 +27,23 @@ class Camera_Module(object):
         self.min_area_threshold = 1500
         
     def is_quadrilateral(self,contour):
-        epsilon = 0.04 * cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, epsilon, True)
-        return len(approx) == 4 and cv2.isContourConvex(approx) and cv2.contourArea(approx) > self.min_area_threshold
-
+        try:
+            epsilon = 0.04 * cv2.arcLength(contour, True)
+            approx = cv2.approxPolyDP(contour, epsilon, True)
+            return len(approx) == 4 and cv2.isContourConvex(approx) and cv2.contourArea(approx) > self.min_area_threshold
+        
+        except cv2.error:
+            pass
+        
     def get_top_left_point_and_bottom_right(self,contour):
-        approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True)
-        return (list(approx[0][0]), list(approx[2][0])) #左上,右下  
+        try:
+            approx = cv2.approxPolyDP(contour, 0.04 * cv2.arcLength(contour, True), True)
+            return (list(approx[0][0]), list(approx[2][0])) #左上,右下 
+        except cv2.error:
+            return (0,0) 
     
     def camera_func(self,data):
-        global box
+        global box, box_cnt
         color_data = self.bridge.imgmsg_to_cv2(data,"bgr8")
         # 画像をグレースケールに変換
         gray = cv2.cvtColor(color_data, cv2.COLOR_BGR2GRAY)
@@ -51,11 +59,18 @@ class Camera_Module(object):
 
         # 最大の輪郭を取得
         max_contour = max(contours, key=cv2.contourArea)
+        '''
+        更新処理をかけるのが難しいので、
+        首の角度が下になっている場合にのみ動作させたい
+        '''
+        #if len(max_contour) <= 150 and 首の角度 <= -10度:にしたい 
         if len(max_contour) <= 150:
             box = max_contour
         
+        #else:
+        # box = None
+        
         # 最大輪郭を用いて平面を検出
-        #for contour in contours:
         if self.is_quadrilateral(box):
             img_draw = cv2.drawContours(result_frame, [box], 0, (0, 255, 0), 2)
             

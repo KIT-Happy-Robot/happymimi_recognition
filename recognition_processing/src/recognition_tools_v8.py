@@ -79,8 +79,8 @@ class RecognitionToolsV8(object):
         except rosgraph.masterapi.MasterError:
             self.object_dict = {'any':['cup', 'bottle']}
 
-        self.update_time = 0 # darknetからpublishされた時刻を記録
-        self.update_flg = False # darknetからpublishされたかどうかの確認
+        self.update_time = 0 # yoloからpublishされた時刻を記録
+        self.update_flg = False # yoloからpublishされたかどうかの確認
 
         rospy.Timer(rospy.Duration(0.5), self.initializeBbox)
 
