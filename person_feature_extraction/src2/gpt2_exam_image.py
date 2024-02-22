@@ -37,14 +37,25 @@ class Person_extract:
     def __init__(self, image_file) -> None:
         self.image_file = PIL.Image.open(image_file)
         # テキスト考案中...
-        self.label_cloth_color = []
-        self.label_pants_color = []
+        # テキスト考案中...
+        self.label_cloth_color = ["person wearing white clothes", "person wearing red clothes",
+                                  "person wearing blue clothes","person wearing black clothes",
+                                  "person wearing glay clothes","person wearing brown clothes",
+                                  "person wearing orange clothes", "person wearing yellow clothes",
+                                  "person wearing green clothes","person wearing purple clothes",
+                                  "person wearing pink clothes"]
+        
+        self.label_pants_color = ["person wearing white pants", "person wearing black pants"]
+        
+        self.label_hair_color = ["dark-haired person","white-haired person",
+                                 "person with brown hair","red-haired person"]
         #取り敢えず試験用に特徴量２つ
         self.label_gender = ["a photo of a man", "a photo of a woman"]
-        self.label_glass = ["a photo of a man wearing glass", "a photo of a man without glasses"]
+        self.label_glass = ["a photo of a person wearing glasses", "a photo of a person not wearing glasses"]
     
     def extract(self):
         #試験的に性別を判断する
+        #label_genderのとこ変えると行けるよ
         inputs_gender = processor(text=self.label_gender, images=self.image_file,
                         return_tensors="pt", padding=True)
         outputs_gender = model(**inputs_gender)
@@ -52,6 +63,7 @@ class Person_extract:
         probs = logits_per_image.softmax(dim=1)
         predicted_class_idx = probs.argmax(-1).item()
         print("-----------------------------------------------")
+        #ここもlabel_gender変えてねん
         print("class:",self.label_gender[predicted_class_idx])
         print("score:", probs)
 
