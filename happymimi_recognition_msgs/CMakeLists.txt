@@ -28,9 +28,9 @@ add_service_files(
   MultipleLocalize.srv
   PositionEstimator.srv
   depth_meter.srv
-
   Clip.srv
   ITT.srv
+  PositionEstimatorPCL.srv
 )
 
 ## Generate actions in the 'action' folder
