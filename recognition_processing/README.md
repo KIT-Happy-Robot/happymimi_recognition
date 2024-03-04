@@ -127,3 +127,25 @@ YOLOで検出した物体の一覧を取得するモジュール
 | any | すべての把持可能物体の三次元位置を返す |
 
 ---
+
+
+# depthMask
+指定した距離（0.3~3.0）[m]以上の距離がある場合はマスク処理を行い黒塗りする。その結果の画像を送る。(Realsenseの性能に準拠(D435))
+
+`from happymimi_recognition_msgs.srv import depth_meter`
+
+initに次を記入
+
+`self.control_depth_mask = rospy.ServiceProxy("depth_mask",depth_meter)`
+
+好きなタイミングで次を記入
+
+`self.control_depth_mask(1.5)`
+
+数字部分にマスクしたい距離(0.3~3.0)[m]を入力
+
+初期値`2.5`
+
+| 公開されているtopic | 型|
+| :---: | :---: |
+|/camera/color/depth_mask | Image |
