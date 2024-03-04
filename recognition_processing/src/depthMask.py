@@ -6,7 +6,7 @@ from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 import rospy
 import numpy as np
-from mimi_motion_detection.srv import depth_meter,depth_meterResponse
+from happymimi_recognition_msgs.srv import depth_meter,depth_meterResponse
 
 
 #以下でlaunchを起動する必要あり
@@ -70,6 +70,9 @@ class ImageMask():
             #画像をtopicとして流す
             img_pub = self.bridge.cv2_to_imgmsg(img_AND,encoding="bgr8")
             self.pub.publish(img_pub)
+            
+            cv2.imshow("depth_mask",img_AND)
+            cv2.waitKey(1)
 
         except cv2.error as e:
             print(e)
