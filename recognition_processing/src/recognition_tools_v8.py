@@ -54,7 +54,7 @@ class RecognitionToolsV8(object):
 
     def __init__(self):
         rospy.Subscriber('/yolo_result',YoloResult,self.boundingBoxCB)
-        rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
+        rospy.Subscriber('/camera/color/depth_mask', Image, self.realsenseCB)
         rospy.Service('/recognition/save',StrTrg,self.saveImage)
         rospy.Service('/recognition/list',RecognitionList,self.listObject)
         rospy.Service('/recognition/find',RecognitionFind,self.findObject)
@@ -216,12 +216,13 @@ class RecognitionToolsV8(object):
         while not find_flg and loop_count <= 3 and not rospy.is_shutdown():
             loop_count += 1
 
-            rotation_angle = 30 - (((loop_count)%4)/2) * 60
-            base_control.rotateAngle(rotation_angle, 0.5)
-            rospy.sleep(3.0)
+            #rotation_angle = 30 - (((loop_count)%4)/2) * 60
+            #base_control.rotateAngle(rotation_angle, 0.5)
+            #roaspy.sleep(3.0)
 
             bbox_list = self.createBboxList(RecognitionToolsV8.bbox)
-            if object_name == '':
+
+            if object_name == '': #kokoiru?
                 find_flg = bool(len(bbox_list))
             elif object_name == 'any':
                 find_flg = bool(len(list(set(self.object_dict['any'])&set(bbox_list))))

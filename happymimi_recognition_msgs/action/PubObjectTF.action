@@ -1,0 +1,11 @@
+#goal
+string name
+float32 dist_x
+float32 dist_y
+---
+#results
+bool data
+---
+# feedback
+int8 state
+

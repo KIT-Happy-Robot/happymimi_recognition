@@ -37,6 +37,7 @@ add_service_files(
 add_action_files(
   FILES
   RecognitionProcessing.action
+  PubObjectTF.action
 )
 
 ## Generate added messages and services with any dependencies listed here
