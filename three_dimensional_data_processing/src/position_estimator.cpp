@@ -115,7 +115,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   float head_height = 13.67*sin(theta*M_PI/180);
   float realsense_height = neck_height + (head_height/100);
 
-  res.point.x = centroid_x -0.04/ 1000;
+  res.point.x = centroid_x / 1000;
   res.point.y = centroid_y / 1000;
   res.point.z = centroid_z / 1000 + realsense_height;
   ROS_INFO("x:%f, y:%f, z:%f", res.point.x, res.point.y, res.point.z);
