@@ -10,6 +10,7 @@ project(three_dimensional_data_processing)
 find_package(catkin REQUIRED
   roscpp
   rospy
+  actionlib
   std_msgs
   pcl_ros
   geometry_msgs

@@ -71,6 +71,9 @@ class ImageMask():
             #画像をtopicとして流す
             img_pub = self.bridge.cv2_to_imgmsg(img_AND,encoding="bgr8")
             self.pub.publish(img_pub)
+            
+            cv2.imshow("depth_mask",img_AND)
+            cv2.waitKey(1)
 
         except cv2.error as e:
             print(e)
