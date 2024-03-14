@@ -1,0 +1,7 @@
+string task_name
+string target  # (obj, person, env)
+string target_area  # (center, right, left, all,,,)
+string[] class_list
+sensor_msgs/Image image # None
+---
+String clacified_name

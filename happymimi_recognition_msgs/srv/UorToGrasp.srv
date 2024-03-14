@@ -1,0 +1,11 @@
+int16[] camera_coord # [
+string camera_area # left, right
+string class # 決め打ち、ラベルあり用
+---
+geometry_msgs/Point centroid_coord
+string[] classes
+string class
+string size
+string shape
+string friction
+string weight

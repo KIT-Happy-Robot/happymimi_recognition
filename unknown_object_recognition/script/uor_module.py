@@ -6,22 +6,24 @@ import yaml
 from pathlib import Path
 from subprocess import PIPE
 import subprocess
-
+import math
+import numpy as np
 # Process API --------------------------------
 import cv2
 import torch
 import open3d as o3d
+import matplotlib.pyplot as plt 
 # Remote API --------------------------------
 import requests
+from transformers import pipeline
+import clip
 from PIL import Image as PILImage
 from transformers import CLIPProcessor, CLIPModel ###
 #----------------------------------------------------------------
-from transformers import pipeline
-import clip
-import numpy as np
 from sklearn.cluster import DBSCAN ###
 # Local API ----------------------------------------------------
-from transformers import BlipProcessor, BlipForConditionalGeneration # https://github.com/salesforce/BLIP
+from transformers import BlipProcessor, BlipForConditionalGeneration 
+#Instrtion: https://github.com/salesforce/BLIP
 from ultralytics import YOLOWorld
 # ROS --------------------------------
 import rospy
@@ -74,29 +76,29 @@ class ImageHub():
         print("\nGetting image format...")
         if isinstance(image, Image):
             print("Input data is a ROS Image message")
-            return "sensor_msgs/Image"
-        if isinstance(image, np.ndarray): # OpenCV cv::Mat か判別
+            return "ros_mage"
+        if isinstance(image, np.ndarray):
             print("Input data is an OpenCV cv::Mat")
-            return
+            return "cv"
         try:
-            image.tobytes()[:4] == b"\xff\xd8\xff\xe0"# JPEG か判別
+            image.tobytes()[:4] == b"\xff\xd8\xff\xe0"
             print("Input data is a JPEG image")
-            return "jpeg"
+            return "jpg"
         except:
             pass
         try:
-            image.tobytes()[:8] == b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a" # PNG か判別
+            image.tobytes()[:8] == b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
             print("Input data is a PNG image")
             return "png"
         except:
             pass
         # その他の場合
         print("Input data is not a recognized image format")
-            return "unknown"
+        return "unknown"
     
     def convertRosCv(self, ros_image): return self.bridge.imgmsg_to_cv2(ros_image)
     def convertJpgCv(self, jpg_image):
-        np_arr = np.frombuffer(jpeg_data, np.uint8)
+        np_arr = np.frombuffer(jpg_image, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         return cv_image
     def converPngCv(self, png_image):
@@ -114,25 +116,83 @@ class ImageHub():
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         ros_image = self.convertCvRos(cv_image)
         return ros_image
-        
     def autoConvert(self, image, target_format):
         pre = self.getImageFormat(image)
-        if target_format == "senfor_msgs/Image":
-            if pre == "Image"self.converImageRosCv(image)           
-        if format == "
+        if target_format == "ros_image":
+            if pre == "ros_image": return image
+            if pre == "cv": return self.convertCvRos(image)
+            if pre == "jpg": return self.converJpgRos(image)
+            if pre == "png": return self.convertPngRos(image)
+        if target_format == "cv":
+            if pre == "ros_imaege": return self.convertRosCv(image)
+            if pre == "cv": return image
+            if pre == "jpg": return self.convertJpgCv(image)
+            if pre == "png": return self.converPngCv(image)
         
 
 class PointCloudHub():
     def __init__(self):
-        rospy.Subscriber('/camera/depth/points', Image, self.points, queue_size=1) ###
+        rospy.Subscriber('/camera/depth/points', Image, self.setPointsCB, queue_size=1)
+        rospy.Subscriber('/camera/depth/color/points', Image, self.setDepthImageCB, queue_size=1) ###
+        # /camera/depth/image_rect_raw 生の深度値
         self.point =[]
         self.points = []
         self.pc2 = []
 
-    def setPoints(self, msg):
-        pcl = .pointcloud2_to_xyz_array(pcl_msg) ###
+    def setPointsCB(self, msg):
+        #pcl = pointcloud2_to_xyz_array(pcl_msg) ###
+        self.o3d_pcd = o3d.geometry.PointCloud()
+        self.o3d_pcd.points = o3d.utility.Vector3dVector(msg.xyz)
+        #o3d.visualization.draw_geometries([self.o3d_pcd]) # ポイントクラウドの可視化など
+    def getO3dPoints(self): return self.o3d_pcd
+    def setDepthImageCB(self, msg):
+        try:
+            self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        except Exception as e:
+            rospy.logerr(e)
+    def getWidthSlice(self, area): ###
+        height, width = self.depth_image.shape[:2] # # 画像の幅と高さを取得
+        left = int(width / 4) # 左右方向の範囲を定義（画面横幅の1/4）
+        right = int(width * 3 / 4)
+        depth_slice = self.depth_image[:, left:right] # 指定された範囲の深度データを抽出
+        depth_slice_valid = depth_slice[depth_slice > 0] # 深度が0（無効値）のピクセルを除外
+    def getHeightSlice(self, area): pass ###
+    def getSlice(self, area): pass ###
+    def getNearestDistance(self, di):
+        if len(id) > 0:
+            min_depth = np.min(id) # 最も近い深度を取得
+            rospy.loginfo("\n最も浅い深度: {:.2f} メートル".format(min_depth))
+        else:
+            rospy.loginfo("\ngetNearestDistance: 指定された範囲内に深度データがありません")
+        return min_depth # + 0.05
+    # O3d ------------------------
+    # downsample
+    # 
+    # Extraction
+    def getPlanePoints(self, option=None, distance_threshold=0.01, ransac_n=3, num_iterations=1000): # 
+        # distance_threshold：インライアとするしきい値, ransac_n：平面を推定する最小の点数, num_iterations：試行回数
+        plane_model, inliers = self.o3d_pcd.segment_plane(distance_threshold, 
+                                                            ransac_n, 
+                                                            num_iterations)
+        [a, b, c, d] = plane_model # each 3d point
+        # [a, b, c, d] = plane_model.np.tolist()
+        print(f"Plane equation: {a:.2f}x + {b:.2f}y + {c:.2f}z + {d:.2f} = 0")
+        # DEBUG
+        inlier_cloud = self.o3d_pcd.select_by_index(inliers) # インライアの点を抽出して色を付け
+        inlier_cloud.paint_uniform_color([1.0, 0, 0])
+        if option: return self.o3d_pcd.select_by_index(inliers, invert=False)
+        if not option: return self.o3d_pcd.select_by_index(inliers, invert=True)
+        if option is None: return self.o3d_pcd.select_by_index(inliers, invert=False)
+    def getPointOnPlane(self): # 平面上の点群を抽出
+        plane_pcd = self.getPlanePoints()
+        return 
+    
+    def extractPointsOnTable(self, ):
+    def extractTableObjects(self, ):
+        
+        return centroid_num, centroid_coords, 
 
-
+# 
 class Prompt():
     def __init__(self):
         #lists = rospy.get_param('objects_list', [])
@@ -160,13 +220,14 @@ class YOLO():
     def setClasses(self, classes==None):
         self.model.set_classes(classes)
 
-    def getPredictResult(self, image, classes==):
+    def clasifyObject(self, image, classes==):
         results = self.model.predict(image, save=True)
         # Show results
         results[0].show()
         output_img = results[0].plot()
         output_msg = self.bridge.cv2_to_imgmsg(output_img, encoding="bgr8")
-        
+    
+    def get
 
 # Remote ----------------------------------------------------------------
 def checkWifi():
@@ -192,13 +253,18 @@ class ClipHub():
         model, preprocess = clip.load(uor_model_config["clip"]["model"], device=self.device)
         #captioner = pipeline("image-to-text",model="Salesforce/blip-image-captioning-base")
         #processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+        
+    #def execute(self, )
     
-    def estimateColor(self, image, object, area=="center"):
+    def objectDetection(self, ):
     
-    def execute(self,
+    
+    def objectNameClasifiction(self, ):
+    
+    def objectColorClasification(self, ):
         
-        
-        
+    def objectCategoryClasification(self, ):
+    def binaryClasification(self, ):
 
 class Image_To_Text(object):
     def __init__(self) -> None:
@@ -238,10 +304,33 @@ class Image_To_Text(object):
         response.result = self.extract()
         return response
     
-
-if __name__ == '__main__':
     rospy.init_node('image_to_text')
     rospy.loginfo("ready to ITT")
     #check_wifi()
     ITT = Image_To_Text()
     rospy.spin()
+
+
+import argparse
+import base64
+from settings.setting import API_KEY
+
+class Gpt4vHub():
+    
+    def __init__():
+        print("Initializing GPT4vHub Object...")
+    
+    def parseArgs():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-i', '--image', type=str,)
+        parser.add_argument('-p', '--prompt', type=str)
+        return parser.parse_args()
+    
+    def encodeImage(self, image_file):
+        if image_file is str():
+            if "/" in text:
+                with open(image_path, "rb") as image_file:
+                    return base64.b64encode(image_file.read()).decode('utf-8')
+            else: return None
+        return base64.b64encode(image_file.read()).decode('utf-8')
+    

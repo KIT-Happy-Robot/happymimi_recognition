@@ -28,9 +28,11 @@ add_service_files(
   MultipleLocalize.srv
   PositionEstimator.srv
   depth_meter.srv
-
   Clip.srv
   ITT.srv
+  UorToGrasp.srv
+  UorClip.srv
+  UorYolo.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -44,6 +46,7 @@ add_action_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
   geometry_msgs
   actionlib_msgs
   happymimi_msgs
