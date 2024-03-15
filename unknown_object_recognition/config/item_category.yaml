@@ -1,0 +1,19 @@
+# 要検証！！！
+# {'food': ['noodle', 'cookies', 'potato_chips'],,,
+food:
+  - noodle
+  - cookies
+  - potato chips
+
+kitchen:
+  - detergent
+  - cup
+  - lunch box
+
+task:
+  - dice
+  - light bulb box
+  - block
+
+unkown:
+  - box

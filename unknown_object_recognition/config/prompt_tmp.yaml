@@ -23,4 +23,4 @@ limit_sentence:
   - "\nひと言で出力すること。"
   - "\nOutput in just one word."
   - ""
-  - "Don't output anything other than {data_type} data.
+  - "Don't output anything other than {data_type} data"

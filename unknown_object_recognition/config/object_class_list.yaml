@@ -1,6 +1,13 @@
 default:
-  - 
-tidyup:
-  -
-  -
 
+tidyup:
+  - noodle
+  - treat box
+  - {color} box
+  - potato chips
+  - detergent
+  - cup
+  - lunch box
+  - dice
+  - light bulb box
+  - block box

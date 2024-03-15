@@ -23,8 +23,7 @@ from transformers import CLIPProcessor, CLIPModel ###
 #----------------------------------------------------------------
 from sklearn.cluster import DBSCAN ###
 # Local API ----------------------------------------------------
-from transformers import BlipProcessor, BlipForConditionalGeneration 
-#Instrtion: https://github.com/salesforce/BLIP
+from transformers import BlipProcessor, BlipForConditionalGeneration #Instrtion: https://github.com/salesforce/BLIP
 from ultralytics import YOLOWorld
 # ROS --------------------------------
 import rospy
@@ -32,11 +31,11 @@ from sensor_msgs.msg import Image, PointCloud2
 from cv_bridge import CvBridge
 # ROS Custum Messages --------------------------------
 from happymimi_msgs.srv import SetStr, SetStrResponse
-from happymimi_recognition_msgs.srv import ITT, ITTResponse
-
 
 password = (os.environ["SUDO_KEY"] + "\n").encode()
-with open("./../config/uor_model.yaml", 'r') as file:
+pkg_dir = Path(__file__).parent.resolve().parent
+image_dir = pkg_dir/"image/"
+with open(pkg_dir/"config/uor_model.yaml", 'r') as file:
     uor_model_config = yaml.safe_load(file)
 def getDevice():
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -52,7 +51,7 @@ class ImageHub():
         self.bridge = CvBridge()
         self.parent_dir = Path(__file__).parent.resolve()
         self.image_dir = self.parent_dir.parent/"image" # ,,/unknown_object_recognition/image
-    def rosInit():
+    def rosInit(self, subs=None):
         rospy.Subscriber('/camera/color/image_raw', Image, self.setHeadColorImageCB, queue_size=1)
         #rospy.Subscriber('/camera/color/image_raw_head', Image, self.armColorImageCB, queue_size=1)###
         #rospy.Subscriber('/camera/color/image_raw_arm', Image, self.CB, queue_size=1)
@@ -76,27 +75,20 @@ class ImageHub():
     def getImageFormat(self, image):
         print("\nGetting image format...")
         if isinstance(image, Image):
-            print("Input data is a ROS Image message")
-            return "ros_mage"
+            print("Input data is a ROS Image message"); return "ros_mage"
         if isinstance(image, np.ndarray):
-            print("Input data is an OpenCV cv::Mat")
-            return "cv"
+            print("Input data is an OpenCV cv::Mat"); return "cv"
         try:
             image.tobytes()[:4] == b"\xff\xd8\xff\xe0"
-            print("Input data is a JPEG image")
-            return "jpg"
-        except:
-            pass
+            print("Input data is a JPEG image"); return "jpg"
+        except: pass
         try:
             image.tobytes()[:8] == b"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
-            print("Input data is a PNG image")
-            return "png"
-        except:
-            pass
+            print("Input data is a PNG image"); return "png"
+        except: pass
         # その他の場合
         print("Input data is not a recognized image format")
         return "unknown"
-    
     def convertRosCv(self, ros_image): return self.bridge.imgmsg_to_cv2(ros_image)
     def convertJpgCv(self, jpg_image):
         np_arr = np.frombuffer(jpg_image, np.uint8)
@@ -107,10 +99,13 @@ class ImageHub():
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         return cv_image
     def convertCvRos(self, cv_image): return self.bridge.cv2_to_imgmsg(cv_image) #encoding="bgr8")
+    def convertCvBase64(self, cv_image):
+        _, encoded_image = cv2.imencode('.png', cv)
+        return base64.b64encode(encoded_image).decode('utf-8')
     def converJpgRos(self, jpg_image):
         np_arr = np.frombuffer(jpg_image, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        ros_image = self.converCvRos(cv_image)
+        ros_image = self.convertCvRos(cv_image)
         return ros_image
     def convertPngRos(self, png_image):
         np_arr = np.frombuffer(png_image, np.uint8)
@@ -121,10 +116,22 @@ class ImageHub():
         try:
             cv_img = self.bridge.imgmsg_to_cv2(ros_img)
             cv2.imwrite("output.jpg", cv_img)
-            rospy.loginfo("Image saved as output.jpg")
-        except Exception as e:
-            rospy.logerr(e)
-        
+            ret, jpg_image_data = cv2.imencode(image_dir/'ros_to_png.jpg', cv_img) # Bool, jpeg data
+            rospy.loginfo("Image data stored in jpg_image_data variable")
+        except Exception as e: rospy.logerr(e)
+        return jpg_image_data
+    def convertRosPng(self, ros_img): # save
+        cv_img = self.convertRosCv(ros_img)
+        _, png_data = cv2.imencode(image_dir/'ros_to_png.png', cv_img)
+        png_image_data = np.array(png_data).tobytes() #バイト列
+        rospy.loginfo("PNG image data stored in variable")
+        # Save
+        # file_name = os.path.join(image_dir, "converted_image.png")
+        # with open(file_name, "wb") as file:
+        #     file.write(png_image_data)
+        # rospy.loginfo("Image saved as output_image.png")
+        return png_image_data
+
     def autoConvert(self, image, target_format):
         pre = self.getImageFormat(image)
         if target_format == "ros_image":
@@ -137,17 +144,29 @@ class ImageHub():
             if pre == "cv": return image
             if pre == "jpg": return self.convertJpgCv(image)
             if pre == "png": return self.converPngCv(image)
-        
+        if target_format == "jpg":
+            if pre == "ros_imaege": return self.convertRosCv(image)
+            if pre == "cv": return image
+            if pre == "jpg": return image
+            if pre == "png": return self.converPngCv(image)
+        if target_format == "png":
+            if pre == "ros_imaege": return self.convertRosCv(image)
+            if pre == "cv": return image
+            if pre == "jpg": return self.convertJpgCv(image)
+            if pre == "png": return self.converPngCv(image)
 
 class PointCloudHub():
     def __init__(self):
-        rospy.Subscriber('/camera/depth/points', Image, self.setPointsCB, queue_size=1)
-        rospy.Subscriber('/camera/depth/color/points', Image, self.setDepthImageCB, queue_size=1) ###
-        # /camera/depth/image_rect_raw 生の深度値
+        print("Initializing PointCloudHub object...")
         self.point =[]
         self.points = []
         self.pc2 = []
 
+    def rosInit(self):
+        rospy.Subscriber('/camera/depth/points', Image, self.setPointsCB, queue_size=1)
+        #rospy.Subscriber('/camera/depth/color/points', Image, self.setDepthImageCB, queue_size=1) ###
+        # /camera/depth/image_rect_raw 生の深度値
+        
     def setPointsCB(self, msg):
         #pcl = pointcloud2_to_xyz_array(pcl_msg) ###
         self.o3d_pcd = o3d.geometry.PointCloud()
@@ -174,7 +193,7 @@ class PointCloudHub():
         else:
             rospy.loginfo("\ngetNearestDistance: 指定された範囲内に深度データがありません")
         return min_depth # + 0.05
-    # O3d ------------------------
+    # Open3d ------------------------
     # downsample
     # 
     # Extraction
@@ -197,9 +216,9 @@ class PointCloudHub():
         return 
     
     def extractPointsOnTable(self, ):
-    def extractTableObjects(self, ):
+    def extractTableObjects(self, ):###
         
-        return centroid_num, centroid_coords, 
+        return centroid_num, centroid_coords, a
 
 # 
 class Prompt():
@@ -208,10 +227,14 @@ class Prompt():
         self.loadLists()
         
     def loadLists(self):
-        self.tidyup_object_dict = rospy.get_param('item_category')
-        keys_obj = self.tidyup_object_dict.keys() # dict_keys(['',,,])
-        self.tidyup_object_category = list(keys_obj)
-        self.tidyup_object_list = [value for values in self.tidyup_object_dict.values() for value in values]
+        # Tidyup用のオブジェクトリスト
+        # with open(pkg_dir/"config/object_list.yaml", 'r') as file:
+        #     self.object_dict = yaml.safe_load(file)
+        with open(pkg_dir/"config/item_category.yaml", 'r') as file:
+            self.object_dict = yaml.safe_load(file)
+        # self.tidyup_object_dict = rospy.get_param('item_category')
+        self.tidyup_category_list = list(self.tidyup_object_dict.keys()) # (# dict_keys(['',,,]))
+        self.tidyup_item_list = [value for values in self.tidyup_object_dict.values() for value in values]
 
     def multiplClassClasificationPrompt(self):
         self.classify_center_tidyup_object_name = (
@@ -219,24 +242,36 @@ class Prompt():
         self.classify_tidyup_object_category = (
             f"Guess the name of the object category in this image in object list: {self.tidyup_object_list}")
 
-class YOLO():
+class YoloHub():
     def __init__(self, model_name==None):
         print("\nInitializing YOLO Object")
-        if model_name is None: model_name = uor_model_config[""]
+        if model_name is None: model_name = uor_model_config["yolo"]["model"]
         print(f"Loading model: %s" % model_name)
-        self.model = YOLOWorld('yolov8s-world.pt')
+        self.model = YOLOWorld(model_name)
+        
+        # 物体検出結果からラベル名のリストを取得
+        #detected_labels = [obj.label for obj in yolo_result.objects]
     
-    def setClasses(self, classes==None):
+    def setClasses(self, classes==None): self.model.set_classes(classes)
+    def getResultList(self, results): # IN:Yolo results, OUT:
+        detections = []
+        for result in results.xyxy[0].tolist():  # Loop through detections in the first image
+            x1, y1, x2, y2, confidence, class_id = result[:6]
+            class_name = self.model.names[int(class_id)]
+            detections.append([class_name, x1, y1, x2, y2], confidence)
+            print(f"Detected {class_name} with confidence {confidence} at [{x1}, {y1}, {x2}, {y2}]")
+        return detections
+    def detectObject(self, classes, image):
         self.model.set_classes(classes)
-
-    def clasifyObject(self, image, classes==):
         results = self.model.predict(image, save=True)
         # Show results
         results[0].show()
         output_img = results[0].plot()
-        output_msg = self.bridge.cv2_to_imgmsg(output_img, encoding="bgr8")
-    
-    def get
+        output_msg = self.bridge.cv2_to_imgmsg(results[0], encoding="bgr8")
+        #return output_img
+        results_lists = self.getResultList(results)
+        return results
+        
 
 # Remote ----------------------------------------------------------------
 def checkWifi():
@@ -253,44 +288,43 @@ def checkWifi():
         os.environ["https_proxy"] = server
 
 class ClipHub():
-    def __init__(self, model_name==None):
+    def __init__(self):
         print("Initializing CLIP")
         checkWifi()
         # DIVECE setting
         self.device = device
-        #モデルの読み込み ###
-        model, preprocess = clip.load(uor_model_config["clip"]["model"], device=self.device)
+    #モデルの読み込み ###  
+    def loadModel(self, task="clasification"):
+        if task=="clasification":
+            self.model, self.preprocess = clip.load(uor_model_config["clip"]["model"], device=self.device)
+            print("ClipHub: Complete loading model")
+            # memo
+            #image = preprocess(Image.open("test.png")).unsqueeze(0).to(device)
+            #text = clip.tokenize(["a human", "a dog", "a cat"]).to(device)
+        #if task=="description": ###
         #captioner = pipeline("image-to-text",model="Salesforce/blip-image-captioning-base")
         #processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
-        
-    #def execute(self, )
     
-    def objectDetection(self, ):
+    def objectDetection(self): pass # Out:Bool
+    def objectNameClasifiction(self, lavels, image): # IN:text list, cv image | OUT:max prop
+        # clip
+        # image_features = self.model.encode_image(image)
+        # text_features = self.model.encode_text(text_list)
+        #logits_per_image, logits_per_text = self.model(image, labels)# 推論
+        # CLIP
+        inputs = processor(text=labels, images=image, return_tensors='pt', padding=True)
+        outputs = model(**inputs)
+        logits_per_image = outputs.logits_per_image
+        logits_per_text = outputs.logits_per_text
+        probs = logits_per_image.softmax(dim=1); print("\nClipHub: probs: "+probs)
+        top_class= probs.argmax(-1).item(); print("\nClipHub: top class: "+ top_class)
+        return 
     
-    
-    def objectNameClasifiction(self, ):
-    
-    def objectColorClasification(self, ):
-        
-    def objectCategoryClasification(self, ):
-    def binaryClasification(self, ):
+    def objectColorClasification(self): pass
+    def objectCategoryClasification(self): pass
+    def binaryClasification(self): pass
 
-class Image_To_Text(object):
-    def __init__(self) -> None:
-        #rospy.Service('/person_feature/gpt', SetStr, self.main)
-    #     rospy.Service('/image_to_text/image', ITT, self.main)
-    #     rospy.Subscriber('/camera/color/image_raw', Image, self.realsenseCB)
-    #     self.bridge = CvBridge()
-        
-    # def realsenseCB(self, res):
-    #     self.image_res = res
-    
-    def extract(self):
-        image = self.bridge.imgmsg_to_cv2(self.image_res)
-        pil_image = PILImage.fromarray(image)
-        result = str(captioner(pil_image)[0]["generated_text"]) 
-        
-        return result
+
     
     def extract_gender(self):
         #試験的に性別を判断する
@@ -308,24 +342,12 @@ class Image_To_Text(object):
         
         return self.label_gender[predicted_class_idx]
 
-    def main(self, request):
-        response = ITTResponse()
-        response.result = self.extract()
-        return response
-    
-    rospy.init_node('image_to_text')
-    rospy.loginfo("ready to ITT")
-    #check_wifi()
-    ITT = Image_To_Text()
-    rospy.spin()
-
 
 import argparse
 import base64
 from settings.setting import API_KEY
 
 class Gpt4vHub():
-    
     def __init__():
         print("Initializing GPT4vHub Object...")
     

@@ -2,11 +2,16 @@ device: gpu
   # cpu, gpu
 yolo:
   model: yolov8s-world.pt # weight
+  # yolov8s-world.pt yolov8s-seg.pt
 clip:
   model: alesforce/blip-image-captioning-base 
-  # ViT-B/32
-  # 
+  # ViT-B/32 :clip
+  # openai/clip-vit-large-patch14 :CLIPModel
+  # openai/clip-vit-base-patch32
+  captioner: 
   processor: openai/clip-vit-large-patch14
+  # openai/clip-vit-large-patch14 :CLIPModel
+  # openai/clip-vit-base-patch32
 
 blip:
   model:
