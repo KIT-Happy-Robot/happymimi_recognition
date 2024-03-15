@@ -15,7 +15,9 @@ prediction:
 receptionist:
   - "目の前にある{chair_num}個の椅子で、人が座っている椅子は"
   - ""
-  - 
+  - "座っている人の右側にある椅子の個数"
+  - "How many chairs are there to the right of the person sitting?"
+  - "What chair is sitting on person, from left of this photo"
 
 limit_sentence:
   - "\nひと言で出力すること。"

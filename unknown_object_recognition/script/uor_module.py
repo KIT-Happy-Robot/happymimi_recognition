@@ -3,11 +3,12 @@
 
 import os
 import yaml
-from pathlib import Path
 from subprocess import PIPE
 import subprocess
 import math
 import numpy as np
+import pathlib 
+from pathlib import Path
 # Process API --------------------------------
 import cv2
 import torch
@@ -116,6 +117,14 @@ class ImageHub():
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         ros_image = self.convertCvRos(cv_image)
         return ros_image
+    def convertRosJpg(self, ros_img):
+        try:
+            cv_img = self.bridge.imgmsg_to_cv2(ros_img)
+            cv2.imwrite("output.jpg", cv_img)
+            rospy.loginfo("Image saved as output.jpg")
+        except Exception as e:
+            rospy.logerr(e)
+        
     def autoConvert(self, image, target_format):
         pre = self.getImageFormat(image)
         if target_format == "ros_image":
