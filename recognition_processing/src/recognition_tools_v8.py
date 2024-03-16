@@ -65,22 +65,22 @@ class RecognitionToolsV8(object):
         self.realsense_image = Image()
         self.image_height = 480# rosparam.get_param('/camera/realsense2_camera/color_height')
         self.image_width = 640# rosparam.get_param('/camera/realsense2_camera/color_width')
-        
+
         #rosparam空間にidの辞書を登録
         with open(yaml_file_path, 'r') as file:
             yaml_data = yaml.safe_load(file)
         for key, value in yaml_data.items():
             rospy.set_param("/yolo_v8_object_id", value)
         self.object_id = rosparam.get_param('/yolo_v8_object_id')
-        
+
         try:
             self.object_dict = rosparam.get_param('/object_dict')
-            
+
         except rosgraph.masterapi.MasterError:
             self.object_dict = {'any':['cup', 'bottle']}
 
-        self.update_time = 0 # yoloからpublishされた時刻を記録
-        self.update_flg = False # yoloからpublishされたかどうかの確認
+        self.update_time = 0 # darknetからpublishされた時刻を記録
+        self.update_flg = False # darknetからpublishされたかどうかの確認
 
         rospy.Timer(rospy.Duration(0.5), self.initializeBbox)
 
@@ -136,14 +136,19 @@ class RecognitionToolsV8(object):
         if bb is None:
             bb = RecognitionToolsV8.bbox
         bbox_list = self.createBboxList(bb)
-
+    
         # 座標を格納したlistを作成
         for i in range(len(bbox_list)):
             if object_name == 'any':
                 if not(bbox_list[i] in self.object_dict['any']): continue
             elif object_name != '':
                 if not(bbox_list[i] == object_name): continue
-            coordinate_list.append([bbox_list[i], [int((bb[i].ymin + bb[i].ymax)/2), int((bb[i].xmin + bb[i].xmax)/2)]])
+                
+            for i in bb.detections.detections:
+                for j in range(len(i.results)):
+                    x_axis = i.bbox.center.x
+                    y_axis = i.bbox.center.y
+                    coordinate_list.append([bbox_list[i], [y_axis, x_axis]])
 
         # ソート
         if sort_option == 'left':
@@ -283,7 +288,7 @@ class RecognitionToolsV8(object):
         list_req.target_name = object_name
         list_req.sort_option = 'front'
         object_list = self.listObject(request=list_req, bb=RecognitionToolsV8.bbox, internal_call=True).object_list
-        
+
         #response_centroid.points = [row[1] for row in object_list if not(row[1].x is numpy.nan)]
         response_list = []
         for row in object_list:
