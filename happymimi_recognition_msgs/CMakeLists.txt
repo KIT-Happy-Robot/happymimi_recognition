@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   geometry_msgs
   actionlib_msgs
   happymimi_msgs
@@ -33,6 +34,7 @@ add_service_files(
   UorToGrasp.srv
   UorClip.srv
   UorYolo.srv
+  UorGpt.srv
 )
 
 ## Generate actions in the 'action' folder

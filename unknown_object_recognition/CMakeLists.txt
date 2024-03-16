@@ -17,7 +17,9 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   vision_msgs
+  sensor_msgs
 )
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -165,10 +167,22 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+catkin_install_python(PROGRAMS
+  script/uor_module.py
+  script/image_server.py
+  script/image_module.py
+  script/pc_module.py
+  script/prompt_module.py
+  script/clip_module.py
+  script/yolo_module.py
+  script/table_object_server.py
+  script/yolo_object_server.py
+  script/uor_gpt_server.py
+  script/uor_clip_server.py
+  script/uor_yolo_server.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

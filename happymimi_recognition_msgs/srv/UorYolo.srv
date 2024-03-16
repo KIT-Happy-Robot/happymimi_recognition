@@ -1,0 +1,5 @@
+string[] classes # 1 class
+
+---
+string class
+geometry_msgs/Point[] point # nearest

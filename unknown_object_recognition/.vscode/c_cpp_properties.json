@@ -1,0 +1,42 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/otogr/noetic_ws/devel/include/**",
+        "/home/otogr/noetic_ws/src/dev/gp/coord_generation/include/**",
+        "/home/otogr/noetic_ws/src/dev/gp/ocr/detect_nameplate_text/include/**",
+        "/home/otogr/noetic_ws/src/external/DynamixelSDK/ros/dynamixel_sdk/include/**",
+        "/home/otogr/noetic_ws/src/external/dynamixel-workbench/dynamixel_workbench_controllers/include/**",
+        "/home/otogr/noetic_ws/src/external/dynamixel-workbench/dynamixel_workbench_operators/include/**",
+        "/home/otogr/noetic_ws/src/external/dynamixel-workbench/dynamixel_workbench_toolbox/include/**",
+        "/home/otogr/noetic_ws/src/dev/mc/floor_pickup/include/**",
+        "/home/otogr/noetic_ws/src/dev/gp/human_feature_estimation/include/**",
+        "/home/otogr/noetic_ws/src/happyrobot_demos/mimi_introduction/include/**",
+        "/home/otogr/noetic_ws/src/dev/gen3/happymimi_apps2/mimi_navi2/include/**",
+        "/home/otogr/noetic_ws/src/dev/pcl/o3d_plane_detection/include/**",
+        "/home/otogr/noetic_ws/src/dev/mc/object_following/include/**",
+        "/home/otogr/noetic_ws/src/dev/gp/ros_ocr/include/**",
+        "/home/otogr/noetic_ws/src/external/rosserial/rosserial_server/include/**",
+        "/home/otogr/noetic_ws/src/external/rosserial/rosserial_test/include/**",
+        "/home/otogr/noetic_ws/src/dev/mc/sound_localization/include/**",
+        "/home/otogr/noetic_ws/src/gen2/arc23_master/tidyup/include/**",
+        "/home/otogr/noetic_ws/src/ultralytics_ros/include/**",
+        "/home/otogr/noetic_ws/src/gen2/happymimi_recognition/unknown_object_recognition/include/**",
+        "/home/otogr/noetic_ws/src/dev/mc/wh_navi1/include/**",
+        "/home/otogr/noetic_ws/src/dev/gp/yolov8/yolov8_ros1/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

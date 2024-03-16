@@ -3,6 +3,7 @@ device: gpu
 yolo:
   model: yolov8s-world.pt # weight
   # yolov8s-world.pt yolov8s-seg.pt
+  input_topic: "/camera/color/image_row"
 clip:
   model: alesforce/blip-image-captioning-base 
   # ViT-B/32 :clip

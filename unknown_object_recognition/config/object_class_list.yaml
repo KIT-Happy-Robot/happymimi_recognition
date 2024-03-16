@@ -1,9 +1,6 @@
 default:
-
-tidyup:
   - noodle
   - treat box
-  - {color} box
   - potato chips
   - detergent
   - cup
@@ -11,3 +8,15 @@ tidyup:
   - dice
   - light bulb box
   - block box
+
+tidyup:
+  - noodle # cup, white cup
+  - treat box # green box
+  - {color} box
+  - potato chips ### orange cup
+  - detergent # yellow bottle
+  - cup ### blue cup
+  - lunch box ### cup, case, round case
+  - dice ### cup, white block
+  - light bulb box # black box, black block###
+  - block box # treat box, box, block###

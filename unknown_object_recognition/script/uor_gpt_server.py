@@ -14,8 +14,16 @@ from openai import OpenAI
 client = OpenAI(api_key=api_key_in)
 import base64
 import requests
-from uor_module import ImageHub
+
+import sys
+import roslib
+base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
+sys.path.insert(0, base_path)
+from image_module import ImageModule
+from prompt_module import PromptModule
 import rospy
+
+from happymimi_recognition_msgs.srv import UorGpt, UorGptResponse
 
 # 画像ファイルの準備
 parent_dir = Path(__file__).parent.resolve()
@@ -26,7 +34,7 @@ for filename in os.listdir(img_dir):
         image_path = os.path.join(img_dir, filename)
         image = Image.open(image_path) # 画像を読み込み
 
-def requestGpt(self, prompt==None, image): #{base64_image}"
+def requestGpt(image, prompt=None): #{base64_image}"
     base_image = image
     if prompt is None: prompt = "What is this"
     headers = {
@@ -46,7 +54,7 @@ def requestGpt(self, prompt==None, image): #{base64_image}"
             {
             "type": "image_url",
             "image_url": {
-                "url": f"data:image/jpeg;base64, {base_image}
+                "url": f"data:image/jpeg;base64, {base_image}"
             }
             }
         ]
@@ -54,12 +62,15 @@ def requestGpt(self, prompt==None, image): #{base64_image}"
     ],
     "max_tokens": 300
     }
+    ###
+    payload["messages"][0]["content"][1]["image_url"]["url"] = str(payload["messages"][0]["content"][1]["image_url"]["url"])
+    payload["messages"][0]["content"][0]["text"] = str(payload["messages"][0]["content"][0]["text"])
     response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
     print(response.json())
     result = response.json()["choices"][0]["message"]["content"]
     print("\nGPT result: "+result); return result
 
-IH = ImageHub()
+IM = ImageModule()
 
 def encodeImage(image_path):
     with open(image_path, "rb") as image_file:
@@ -69,18 +80,23 @@ def encodeImage(image_path):
 base64_image = encodeImage(img_file)
 
 def serviceCB(req):
-    IH.rosinit()
-    #ros_img = IH.converRosJpg(req.image)
-    if req.image == None:
-        cv_img = IH.getHeadCvImage()
-    else: cv_img = IH.autoConvert(req.img, "cv")
-    base_img = IH.converCvBase64(cv_img)
-    res= requestGpt(image=base_img)
-    return res
+    SrvRes = UorGptResponse()
+    #ros_img = IM.converRosJpg(req.image)
+    if req.camera_name == "head":
+        cv_img = IM.getHeadCvImage()
+    else: cv_img = IM.autoConvert(cv_img, "cv")
+    base_img = IM.convertCvBase64(cv_img)
+    result= requestGpt(image=base_img, prompt=req.prompt)
+    SrvRes.result = result
+    return SrvRes
     
 def main():
+    rospy.loginfo("Initialing Node: uor_gpt_server")
     rospy.init_node('uor_gpt_server')
+    IM.rosInit()
     rospy.Service("/uor/gpt_server", UorGpt, serviceCB)
+    rospy.loginfo("Initialized Node: uor_gpt_server")
+    
     rospy.spin()
 
     
