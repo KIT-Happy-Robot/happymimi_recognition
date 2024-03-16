@@ -176,6 +176,8 @@ class UnknownObjectYoloServer(YoloHub):
                 obj_name = self.object_id[str(obj)]
                 bbox_list.append(obj_name)
         return bbox_list # 
+    def getBool(self, results): pass
+    def get
     # service
     def yoloCB(self, msg):
         yolo_result = self.detectObject()
