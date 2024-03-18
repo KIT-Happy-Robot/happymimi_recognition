@@ -92,23 +92,9 @@ class ClipModule():
         logits_per_text = outputs.logits_per_text
         probs = logits_per_image.softmax(dim=1); print("\nClipHub: probs: "+probs)
         top_class= probs.argmax(-1).item(); print("\nClipHub: top class: "+ top_class)
+        
         return
 
     def objectColorClasification(self): pass
     def objectCategoryClasification(self): pass
     def binaryClasification(self): pass
-    def extract_gender(self):
-        #試験的に性別を判断する
-        image = self.bridge.imgmsg_to_cv2(self.image_res)
-        inputs_gender = self.processor(text=self.label_gender, images=image,
-                        return_tensors="pt", padding=True)
-
-        outputs_gender = self.model(**inputs_gender)
-        logits_per_image = outputs_gender.logits_per_image
-        probs = logits_per_image.softmax(dim=1)
-        predicted_class_idx = probs.argmax(-1).item()
-        print("--------------------------------------------")
-        print("class:",self.label_gender[predicted_class_idx])
-        print("score:", probs)
-
-        return self.label_gender[predicted_class_idx]
