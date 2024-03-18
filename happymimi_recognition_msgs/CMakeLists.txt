@@ -28,6 +28,7 @@ add_service_files(
   MultipleLocalize.srv
   PositionEstimator.srv
   depth_meter.srv
+  LeftRight2xyz.srv
 
   Clip.srv
   ITT.srv
