@@ -1,12 +1,11 @@
 string scope # 範囲
-
+float64 distance
 ---
 geometry_msgs/Point[] points
-float64[] distances 
+float64[] distances
     # data 重心までの距離
 float64[] tilt_angles
-BoudingBox3DArray bbox3d 
-    # geometry_msgs/Pose center, geometry_msgs/Vector3 size 
-float64[] tdof_angles 
+vision_msgs/BoudingBox3DArray bbox3d
+    # geometry_msgs/Pose center, geometry_msgs/Vector3 size
+float64[] tdof_angles
     # 3 Degrees of Freedoms(Point position,Quaternion orientation
-

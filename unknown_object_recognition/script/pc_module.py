@@ -10,6 +10,8 @@ import cv2
 import torch
 import open3d as o3d
 import rospy
+import ros_numpy
+from std_msgs.msg import Header
 from sensor_msgs.msg import Image, PointCloud2
 import sensor_msgs.point_cloud2 as pc2
 from cv_bridge import CvBridge
@@ -64,6 +66,20 @@ class PointCloudModule():
             rospy.loginfo("\ngetNearestDistance: 指定された範囲内に深度データがありません")
         return min_depth # + 0.05
 
+    # Open3Dで処理した点群をROSのPointCloud2メッセージに変換する関数
+    def convertO3dPc2(self, o3d_pcd):
+        header = Header()
+        header.stamp = rospy.Time.now()
+        header.frame_id = "camera_link"  # フレームIDを適切なものに変更する必要があります
+        # ROSのPointCloud2メッセージに変換
+        pc2_msg = ros_numpy.point_cloud2.array_to_pointcloud2(o3d_pcd.points, o3d_pcd.colors, header)
+        return pc2_msg
+    # DEBUG ----------------------------------------------------------------
+    #def publishO3dPcd(self, o3d_pcd):
+    # Open3Dで処理した点群の表示
+    def visualize_open3d_pointcloud(o3d_pcd):
+        o3d.visualization.draw_geometries([o3d_pcd])
+
     # Open3d (process head color points)###
     # 前処理-------------------------------
     # downsampling
@@ -74,6 +90,7 @@ class PointCloudModule():
         distances = pcd.compute_point_cloud_distance([0,0,0]) # Compute distance of each point from the origin
         indices = distances < distance_threshold
         return pcd.select_by_index(indices)
+    
     # RANSACアルゴリズムの平面抽出（invert:平面かそれ以外の点群かのやつ）
     def getPlanePoints(self, pcd, invert=False, distance_threshold=0.01, ransac_n=3, num_iterations=1000): # 
         plane_model, inliers = pcd.segment_plane(distance_threshold, # distance_threshold：インライアとするしきい値
@@ -87,8 +104,8 @@ class PointCloudModule():
         return inlier_cloud # 平面点のみを抽
         #inlier_cloud.paint_uniform_color([1.0, 0, 0])
     # テーブルの上にある物体の点群だけ抽出
-    def extractPointsOnTable(self, pcd=None):
-        head_ds_points = self.downsamplePoints(self.o3d_color_pcd)
+    def extractPointsOnTable(self, pcd, distance_threshold=1.2):
+        head_ds_points = self.downsamplePoints(pcd, distance_threshold)
         inliers = self.getRemevedOutlierPoints(head_ds_points)
         objects_points = self.getPlanePoints(inliers, invert=False)
         return objects_points
@@ -100,8 +117,8 @@ class PointCloudModule():
         with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
             # 各点がどのクラスタに属するかを示すインデックス（numpy.ndarray）、-1はノイズ
             labels = np.array(pcd.cluster_dbscan(eps=0.02, # クラスタ内の点と定義する距離の閾値
-                                                 min_points=10, # クラスタを形成するために必要な最小の点の数
-                                                 print_progress=True)) # クラスタリングの進行状況を表示するかどうか
+                                                min_points=10, # クラスタを形成するために必要な最小の点の数
+                                                print_progress=True)) # クラスタリングの進行状況を表示するかどうか
         max_label = labels.max()
         print(f"Point cloud has {max_label + 1} clusters")
         # クラスタリングされた点群を取得
@@ -128,14 +145,22 @@ class PointCloudModule():
             centroid = np.asarray(cluster_point_cloud.points).mean(axis=0)
             centroids.append(centroid)
         return centroids
+
     # カメラ原点から各重心までの距離を計算する関数
-    def computeDistancesToCentroids(centroids):
+    def computeDistancesToCentroids(self, centroids, base_coord): ###
         camera_origin = np.array([0, 0, 0])  # カメラ原点の座標
         distances = []
         for centroid in centroids:
             distance = np.linalg.norm(centroid - camera_origin)
             distances.append(distance)
-        return distances
+        # 距離が小さい順に並び替える
+        sorted_indices = sorted(range(len(distances)), key=lambda k: distances[k])
+        
+        # クラスタ点群の3次元座標のリストを距離が小さい順に並べ替える
+        sorted_centroids = [centroids[i] for i in sorted_indices]
+        sorted_distances = [distances[i] for i in sorted_indices]
+        return sorted_centroids, sorted_distances
+        #return distances
     
     # テーブルの上においてある物体の各情報を求める
     def extractTableObjects(self, pcd):###
@@ -143,14 +168,17 @@ class PointCloudModule():
         labels, clustered_point_clouds = self.clastering(points_on_table)
         #clusterd_point_clouds = self.getClusterPointClouds(clustered_points, labels)
         each_claster_centroids = self.computeClusterCentroids(clustered_point_clouds)
-        centroids_distances = self.conputeDistancesToCentroids(each_claster_centroids)
-        centroid_num = 0
-        centroid_coords = []
+        centroid_coords, centroid_distances = self.computeDistancesToCentroids(each_claster_centroids)
+        # 距離が小さい順に並び替える
+        #sorted_distances = sorted(centroids_distances)
+        min_distance = centroid_distances[0]
+        centroid_num = len(centroid_distances)
+        nearest_centroid_coord = each_claster_centroids[0]
         size = ["w","h"]; shape=""; tilt_angle=0.0
-        
         return centroid_num, centroid_coords
+
     
-    # 3DoF推定
+    # 3DoF推定 --------------------------------------
     def estimateOrientation(self, claster_color_pcd):
         # Open3DのPointCloudオブジェクトに直接設定
         pcd = o3d.geometry.PointCloud()
