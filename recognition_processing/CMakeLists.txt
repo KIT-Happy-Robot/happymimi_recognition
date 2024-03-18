@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 #add pcl
-find_package(PCL REQUIRED)
+find_package(PCL COMPONENTS common visualization io REQUIRED)
 catkin_package(CATKIN_DEPENDS roscpp std_msgs pcl_conversions pcl_ros)
 
 
@@ -30,5 +30,7 @@ add_definitions(${PCL_DEFINITIONS})
 #add pcl
 add_executable(point_sample point_cloud/point_sample.cpp)
 add_executable(point_estimation point_cloud/point_estimation.cpp)
+add_executable(point_view point_cloud/point_view.cpp)
 target_link_libraries(point_sample ${catkin_LIBRARIES})
 target_link_libraries(point_estimation ${catkin_LIBRARIES})
+target_link_libraries(point_view ${catkin_LIBRARIES} ${PCL_LIBRARIES})

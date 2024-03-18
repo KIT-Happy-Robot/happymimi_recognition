@@ -23,7 +23,7 @@ void cloud_cb(sensor_msgs::PointCloud2 input) {
   // Distance-based Masking
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
   double min_distance = 0.001;  // Minimum distance
-  double max_distance = 0.5;  // Maximum distance
+  double max_distance = 1.5;  // Maximum distance
 
   for (const auto& point : cloud_filtered->points) {
     double distance = sqrt(point.x * point.x + point.y * point.y + point.z * point.z);

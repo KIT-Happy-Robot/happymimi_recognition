@@ -82,6 +82,7 @@ class RecognitionToolsV8(object):
         self.update_time = 0 # darknetからpublishされた時刻を記録
         self.update_flg = False # darknetからpublishされたかどうかの確認
 
+        rospy.loginfo("Ready tools server")
         rospy.Timer(rospy.Duration(0.5), self.initializeBbox)
 
     def boundingBoxCB(self,bb):
@@ -146,9 +147,10 @@ class RecognitionToolsV8(object):
                 
             for i in bb.detections.detections:
                 for j in range(len(i.results)):
-                    x_axis = i.bbox.center.x
-                    y_axis = i.bbox.center.y
-                    coordinate_list.append([bbox_list[i], [y_axis, x_axis]])
+                    x_axis = int(i.bbox.center.x)
+                    y_axis = int(i.bbox.center.y)
+                    coordinate_list.append([bbox_list[j],[str(y_axis),str(x_axis)]])
+                    print(coordinate_list)
 
         # ソート
         if sort_option == 'left':
