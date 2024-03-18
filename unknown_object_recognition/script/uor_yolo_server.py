@@ -4,7 +4,6 @@
 # 未知の物体の位置、物体名などの情報を返すROSサービスサーバーノード
 # uor_moduleのYoloクラスやその関数を使って、未知物体のバウンディングボックスを取得やラベル名の取得をする。
 # IN: 
-#!/usr/bin/env python3
 
 import os
 import time
@@ -22,6 +21,7 @@ from ultralytics_ros.msg import YoloResult
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 from sensor_msgs.msg import Image
 from vision_msgs.msg import BoundingBox2D
+from happymimi_msgs.srv import StrTrg # for Finding
 from happymimi_recognition_msgs import UorYolo, UorYoloResponse
 from uor_module import ImageModule
 
@@ -79,7 +79,18 @@ class YoloHub():
             if self.uor_model_config["device"] == "gpu": pass
             else: device = "cpu"
         return device
-    def setModelClasses(self, classes): self.model.set_classes(classes)
+    def setModelClasses(self, classes): 
+        for i in classes:
+        self.class_id_list = {id: name for id, name in enumerate(classes, start=1)}
+        
+        self.model.set_classes(classes)
+    def executePredict(self):
+        for i in classes:
+        self.class_id_list = {id: name for id, name in enumerate(classes, start=1)}
+        self.model.set_classes(classes)
+        self.model
+        
+        
     def getResultList(self, results): # IN:Yolo results, OUT: label and bbox list
         detections = []
         for result in results.xyxy[0].tolist():  # Loop through detections in the first image
@@ -89,6 +100,7 @@ class YoloHub():
             print(f"Detected {class_name} with confidence {confidence} at [{x1}, {y1}, {x2}, {y2}]")
         return detections
 
+    # ultralytics_rosのtrackerノードから持ってきただけ
     def imageCB(self, msg):
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
         results = self.model.predict(cv_image, save=True)
@@ -130,7 +142,8 @@ class YoloHub():
             detection.results.append(hypothesis)
             detections_msg.detections.append(detection)
         return detections_msg
-        
+    
+    # Get 
     def detectObject(self, classes, image):
         self.model.set_classes(classes)
         results = self.model.predict(image, save=True)
@@ -152,12 +165,13 @@ class UnknownObjectYoloServer(YoloHub):
         rospy.Subscriber("/uor/yolo_result", YoloResult,self.bboxCB)
         # IN: classes | OUT: bbox(Pose2D center[x,y,theta], size_x 0.0, size_y 0.0)
         self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.yoloCB)
-        self.find_ss = rospy.Service("/uor/yolo_server/finding", , self.findServiceCB)# cla
+        self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
         # 物体分類サーバー　IN: classes[], camera_name, area | OUT: class_name, item_category
         #self.clasify_ss = rospy.Service("/uor/yolo_server/clasifition", UorYolo, self.clasifyCB)
         # 物体検出、検知サーバー IN: Classes| OUT: results["obj":[xyz], conf,,,]
         self.detecttions_ss = self.rospy.Service("/uor/yolo_server/detections", UorYolo, self.detectService)
-        IM.rosInit()
+        self.IM = ImageModule()
+        self.IM.rosInit()
         rospy.loginfo("UnknownObjectYoloServer: Im Ready to response...")
     # sub
     def bboxCB(self, bb):
@@ -177,18 +191,24 @@ class UnknownObjectYoloServer(YoloHub):
                 obj_name = self.object_id[str(obj)]
                 bbox_list.append(obj_name)
         return bbox_list # 
-    def getBool(self, results): pass
-    def get
+    # IN: a | OUT: 
+    def getBool(self, results):
+        return 
+        
+    def getFindBool(self, results):
+          
     # service
     def yoloCB(self, msg):
         yolo_result = self.detectObject()
     def serviceCB(): pass
-    # Sub Callback
-    #def setDetectedObject
-    def detectService(self, req):
-    # Detection
-    def detectObject
+    
+    def findServiceCB(self, req):
+        result = StrTrg()
+        
+        return result
+
+    def detectServiceCB(self, req):
     
 
 
-    def multipleLocalize():
+    def multipleLocalize(): pass

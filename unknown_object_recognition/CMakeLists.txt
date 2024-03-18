@@ -174,9 +174,8 @@ catkin_install_python(PROGRAMS
   script/pc_module.py
   script/prompt_module.py
   script/clip_module.py
-  script/yolo_module.py
   script/table_object_server.py
-  script/yolo_object_server.py
+  script/uor_yolo_server.py
   script/uor_gpt_server.py
   script/uor_clip_server.py
   script/uor_yolo_server.py

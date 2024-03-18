@@ -1,0 +1,5 @@
+<!-- main.launch -->
+<launch>
+    <include file="$(find realsense2_camera)/launch/rs_camera_point.launch" />
+    <node name="point_sample" pkg="recognition_processing" type="point_sample"/>
+</launch>

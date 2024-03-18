@@ -35,6 +35,7 @@ add_service_files(
   UorClip.srv
   UorYolo.srv
   UorGpt.srv
+  PositionEstimatorPCL.srv
 )
 
 ## Generate actions in the 'action' folder
