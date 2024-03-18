@@ -21,6 +21,7 @@ tidyup_classes=[
     "black_box", #light bulb box, black block###
     "block box" # treat box, box, block###
 ]
+
 cifar10_classes = [
     'airplane',
     'automobile',
