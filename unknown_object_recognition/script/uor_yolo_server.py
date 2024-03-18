@@ -6,10 +6,10 @@
 # IN: 
 
 import os
+import inspect
 import time
 import yaml
 import numpy as np
-import pathlib 
 from pathlib import Path
 import cv2
 import torch
@@ -24,6 +24,7 @@ from vision_msgs.msg import BoundingBox2D
 from happymimi_msgs.srv import StrTrg # for Finding
 from happymimi_recognition_msgs import UorYolo, UorYoloResponse
 from uor_module import ImageModule
+import label_tmp
 
 
 class YoloHub():
@@ -36,6 +37,8 @@ class YoloHub():
             self.object_class_list = yaml.safe_load(file)
         self.default_classes = self.object_class_list["default"]
         self.tidyup_classes = self.object_class_list["tidyup"]
+        self.lt = label_tmp ###
+        self.lt_tu = self.tl.tidyup_classes
         # Set Config
         self.device = self.getDevice()
         self.setClasses()
@@ -46,6 +49,7 @@ class YoloHub():
         self.model = YOLOWorld(model_name)
         # ROS
         self.bridge = cv_bridge.CvBridge()
+        self.IM = ImageModule; self.IM.rosInit()
         rospy.Subscriber(self.uor_model_config["yolo"]["input_topic"], 
                         Image, self.imageCB, queue_size=1, buff_size=2**24)
         self.result_image_pub = rospy.Publisher(self.uor_model_config["yolo"]["input_topic"], 
@@ -72,23 +76,28 @@ class YoloHub():
         return formatted_results
         # 物体検出結果からラベル名のリストを取得
         #detected_labels = [obj.label for obj in yolo_result.objects]
-        
+    # 推論するクラスリストについて、それぞれクラスIDを順に割り振る
+    def getResultClassName(self, class_id): class_name = self.class_id_list
     def getDevice(self):
         device = "cuda" if torch.cuda.is_available() else "cpu"
         if device == "cuda":
             if self.uor_model_config["device"] == "gpu": pass
             else: device = "cpu"
         return device
-    def setModelClasses(self, classes): 
-        for i in classes:
-        self.class_id_list = {id: name for id, name in enumerate(classes, start=1)}
-        
+    # Yolo-worldの推論実行
+    def executePredict(self, image, classes):
+        self.class_id_list = {id: name for id, name in enumerate(classes, start=0)} # id
         self.model.set_classes(classes)
-    def executePredict(self):
-        for i in classes:
-        self.class_id_list = {id: name for id, name in enumerate(classes, start=1)}
-        self.model.set_classes(classes)
-        self.model
+        results = self.model.predict(image, classes)
+        return results
+    def debugPredict(self):
+        results = self.executePredict(self.IM.head_depth_musk_color_image)
+        results[0].show()
+        print("\nresults[0] :" + results[0])
+        print("\n results[0].names:" + results[0].names)
+        print("\n display results[0] image by cv2")
+        result_image = results[0]
+        cv2.imshow(result_image)
         
         
     def getResultList(self, results): # IN:Yolo results, OUT: label and bbox list
@@ -154,15 +163,14 @@ class YoloHub():
         #return output_img
         #results_lists = self.getResultList(results)
         return results
-    
 
-# IN: 
+# IN: Sub(Yolo-world Results /uor/yolo_result) | OUT: Server (detecttion and localizeation, finding)
 class UnknownObjectYoloServer(YoloHub):
     def __init__(self):
         rospy.init_node("uor_yolo_server")
         rospy.loginfo("Initializing Node: ** uor_yolo_server **")
         
-        rospy.Subscriber("/uor/yolo_result", YoloResult,self.bboxCB)
+        rospy.Subscriber("/uor/yolo_result", YoloResult, self.bboxCB)
         # IN: classes | OUT: bbox(Pose2D center[x,y,theta], size_x 0.0, size_y 0.0)
         self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.yoloCB)
         self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
@@ -173,7 +181,7 @@ class UnknownObjectYoloServer(YoloHub):
         self.IM = ImageModule()
         self.IM.rosInit()
         rospy.loginfo("UnknownObjectYoloServer: Im Ready to response...")
-    # sub
+    # subs
     def bboxCB(self, bb):
         self.update_time = time.time()
         self.update_flg = True
@@ -191,24 +199,25 @@ class UnknownObjectYoloServer(YoloHub):
                 obj_name = self.object_id[str(obj)]
                 bbox_list.append(obj_name)
         return bbox_list # 
-    # IN: a | OUT: 
-    def getBool(self, results):
-        return 
+    # IN: a class name(data) | OUT: Bool(result)
         
-    def getFindBool(self, results):
-          
-    # service
+    # service -------------------------------
     def yoloCB(self, msg):
         yolo_result = self.detectObject()
+        
     def serviceCB(): pass
-    
+    def getFindingResult(self, results): ###
+        pass
     def findServiceCB(self, req):
         result = StrTrg()
         
         return result
 
-    def detectServiceCB(self, req):
+    # IN: Classes| OUT: results["class_name":[xyz], conf,,,]
+    def detectServiceCB(self, req): pass
+    # IN: Classes | OUT: 
+    #def multipleLocalize(): pass
+    
     
 
-
-    def multipleLocalize(): pass
+if __name__ = "__"

@@ -1,7 +1,26 @@
 #!/usr/bin/env python3 
 
+# Yamlだと代入とかできなくて不便だからPythonスクリプトのも作っておく
 
-# 
+default_classes = [
+    "cup",
+    "bottle",
+    "box",
+    "chair",
+    "table",
+]
+
+tidyup_classes=[
+    "white_cup", # noodle
+    "green_box", # "treat_box", "long_block"
+    "orange cup", #"potato chips"
+    "yellow_bottle", # "detergent"
+    "blue_cup", # "cup"
+    "red_case", #lunch box ### cup, case, round case
+    "white_block", #dice ### cup, white block
+    "black_box", #light bulb box, black block###
+    "block box" # treat box, box, block###
+]
 cifar10_classes = [
     'airplane',
     'automobile',
