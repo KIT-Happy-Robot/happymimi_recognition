@@ -28,14 +28,19 @@ from uor_module import ImageModule
 
 class YoloHub():
     def __init__(self, model_name=None):
+        # Classes list
+        self.pkg_dir = Path(__file__).parent.resolve().parent
+        with open(self.pkg_dir/"config/uor_model.yaml", 'r') as file:
+            self.uor_model_config = yaml.safe_load(file)
+        with open(self.pkg_dir/"config/object_class.yaml", 'r') as file:
+            self.object_class_list = yaml.safe_load(file)
+        self.default_classes = self.object_class_list["default"]
+        self.tidyup_classes = self.object_class_list["tidyup"]
         # Set Config
-        self.setConfig()
-        self.setDevice()
+        self.device = self.getDevice()
         self.setClasses()
         rospy.loginfo("\nInitializing YOLO Object")
         if model_name is None: model_name = self.uor_model_config["yolo"]["model"]
-        
-        self.model.set_classes(classes)
         rospy.loginfo(f"Loading model: %s" % model_name)
         # load
         self.model = YOLOWorld(model_name)
@@ -68,17 +73,13 @@ class YoloHub():
         # 物体検出結果からラベル名のリストを取得
         #detected_labels = [obj.label for obj in yolo_result.objects]
         
-    def setConfig(self):
-        pkg_dir = Path(__file__).parent.resolve().parent
-        with open(pkg_dir/"config/uor_model.yaml", 'r') as file:
-            self.uor_model_config = yaml.safe_load(file)
-    def setDevice(self):
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        if self.device == "cuda":
+    def getDevice(self):
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if device == "cuda":
             if self.uor_model_config["device"] == "gpu": pass
-            else: self.device = "cpu"
-        return self.device
-    def setClasses(self, classes=None): self.model.set_classes(classes)
+            else: device = "cpu"
+        return device
+    def setModelClasses(self, classes): self.model.set_classes(classes)
     def getResultList(self, results): # IN:Yolo results, OUT: label and bbox list
         detections = []
         for result in results.xyxy[0].tolist():  # Loop through detections in the first image

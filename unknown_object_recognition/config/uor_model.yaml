@@ -13,6 +13,5 @@ clip:
   processor: openai/clip-vit-large-patch14
   # openai/clip-vit-large-patch14 :CLIPModel
   # openai/clip-vit-base-patch32
-
 blip:
   model:

@@ -7,22 +7,23 @@
 import rospy
 from happymimi_recognition_msgs import UorClip, UorClipResponse
 import roslib
+import sys
 base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
 sys.path.insert(0, base_path)
-from uor_module import ImageModule, ClipHub
+from image_module import ImageModule
+from clip_module import ClipModule
 
 class UnknownObjectClipServer():
     def __init__(self):
         rospy.loginfo("Initializing Node: ** Unknown object Clip Server **")
         rospy.Service("/uro/clip_server", UorClip, self.serviceCB)
-        self.IM = ImageModule(); 
-        self.IM.rosInit()
-        self.CH = ClipHub()
+        self.IM = ImageModule(); self.IM.rosInit()
+        self.CM = ClipModule()
         self.object_class_list = rospy.get_param("/object_class_list", [])
         rospy.loginfo("UnknownObjectClipServer: Im Ready to response...")
-    
+        
     def serviceCV(self, req):
-        image = self.IMAGEHUB.autoConvert(req.image, "cv")
+        image = self.IM.autoConvert(req.image, "cv")
         task_name = req.task_name
         target_name = req.target_name
         target_area = "center" if req.target_area is None else req.target_area

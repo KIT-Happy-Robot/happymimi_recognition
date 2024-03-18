@@ -9,7 +9,7 @@ default:
   - light bulb box
   - block box
 
-tidyup:
+tidyup_item_list:
   - noodle # cup, white cup
   - treat box # green box
   - {color} box
@@ -20,3 +20,4 @@ tidyup:
   - dice ### cup, white block
   - light bulb box # black box, black block###
   - block box # treat box, box, block###
+tidyup_

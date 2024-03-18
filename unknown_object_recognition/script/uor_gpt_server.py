@@ -25,7 +25,7 @@ import rospy
 
 from happymimi_recognition_msgs.srv import UorGpt, UorGptResponse
 
-# 画像ファイルの準備
+# テスト画像ファイルの準備
 parent_dir = Path(__file__).parent.resolve()
 img_dir = parent_dir.parent/"image"
 img_file = img_dir/"pcp_2.png"
@@ -36,7 +36,7 @@ for filename in os.listdir(img_dir):
 
 def requestGpt(image, prompt=None): #{base64_image}"
     base_image = image
-    if prompt is None: prompt = "What is this"
+    if prompt is None: prompt = "What is this? output simply"
     headers = {
     "Content-Type": "application/json",
     "Authorization": f"Bearer {api_key_in}"
@@ -60,7 +60,7 @@ def requestGpt(image, prompt=None): #{base64_image}"
         ]
         }
     ],
-    "max_tokens": 300
+    "max_tokens": 100
     }
     ###
     payload["messages"][0]["content"][1]["image_url"]["url"] = str(payload["messages"][0]["content"][1]["image_url"]["url"])
