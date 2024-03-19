@@ -3,7 +3,6 @@
 
 import cv2
 import rospy
-import numpy as np
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
