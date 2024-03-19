@@ -1,5 +1,5 @@
 string[] classes # 1 class
-
+string option # "all", "nearest" 
 ---
 string class
-geometry_msgs/Point[] point # nearest
+geometry_msgs/Point[] point
