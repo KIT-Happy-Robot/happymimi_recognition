@@ -8,14 +8,17 @@
 import os
 import yaml
 import numpy as np
-
+import sys
 import open3d as o3d
 
 import rospy
-import cv_bridge
+from cv_bridge import CvBridge
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs import Point
-from happymimi_recognition_msgs import UOR, UORResponse
+from geometry_msgs.msg import Point
+from happymimi_recognition_msgs.srv import UOR, UORResponse
+import roslib
+base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
+sys.path.insert(0, base_path) 
 from pc_module import PointCloudModule
 
 
@@ -25,7 +28,7 @@ class TableObjectServer():
         rospy.init_node("table_object_server")
         rospy.loginfo("Initializing Node: ** table_object_server **")
         self.PCM = PointCloudModule()
-        self.PCM.rosInit()
+        self.PCM.rosInit(color=True)
         self.to_ss = rospy.Service("/uor/table_object_server", UOR, self.serviceCB)
         # DEBUG
         if debug: 
@@ -66,7 +69,7 @@ class TableObjectServer():
         
 
 def main():
-    TOS = TableObjectServer()
+    TOS = TableObjectServer(debug=True)
     
     rospy.spin()
 

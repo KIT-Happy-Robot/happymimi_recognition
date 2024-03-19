@@ -29,9 +29,9 @@ class ImageModule():
             if not depth_musk: rospy.Subscriber('/camera/color/image_raw', Image, self.headColorCB, queue_size=1)
             else: rospy.Subscriber('camera/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
                 #self.pub = rospy.Publisher('camera/color/depth_mask',Image,queue_size=10)
-        if head_depth: rospy.Subscriber('/camera/depth/image_rect_raw', Image, self.armColorCB, queue_size=1)###
+        if head_depth: rospy.Subscriber('/camera/depth/image_raw', Image, self.headDepthCB, queue_size=1)###
         if arm: rospy.Subscriber('/camera/color/image_raw_arm', Image, self.armColorCB, queue_size=1)
-        if arm_depth: rospy.Subscriber('/camera/depth/image_rect_raw_arm', Image, self.armColorCB, queue_size=1)###
+        if arm_depth: rospy.Subscriber('/camera/depth/image_raw_arm', Image, self.armDepthCB, queue_size=1)###
         #rospy.Subscriber('/camera/color/image_raw_arm', Image, self.CB, queue_size=1)
         #rospy.Subscriber('/yolo_result', Image, self.yoloCB)
     def headColorCB(self, msg): self.head_color_image = msg
@@ -136,4 +136,23 @@ class ImageModule():
             if pre == "jpg": return self.convertJpgCv(image)
             if pre == "png": return self.converPngCv(image)
     
+    
     def getMinDepth(self, image): pass ###
+
+    # カメラ上の点座標から深度を取り出すげた
+    def getCameraPointDepth(self, camera_point, camera_name="head"):
+        if camera_name =="head":
+            return self.head_depth_image[camera_point[0], camera_point[1]]
+        if camera_name =="arm":
+            return self.arm_depth_image[camera_point[0], camera_point[1]]
+    # ちゃんとBBox内の深度の中央値で物体との距離を求めるやつ
+    def getMedianBBoxDepth(self, bbox, camera_name="head"):
+        if camera_name == "head": depth_image = self.head_depth_image
+        if camera_name == "arm": depth_image = self.arm_depth_image
+        xmin, ymin, xmax, ymax = bbox
+        depth_values = []
+        for y in range(ymin, ymax+1):
+            for x in range(xmin, xmax+1):
+                depth_values.append(depth_image[y, x])
+        median_depth = np.median(depth_values)
+        return median_depth
