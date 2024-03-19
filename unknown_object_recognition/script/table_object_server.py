@@ -8,8 +8,7 @@
 import os
 import yaml
 import numpy as np
-from pathlib import Path
-import cv2
+
 import open3d as o3d
 
 import rospy
