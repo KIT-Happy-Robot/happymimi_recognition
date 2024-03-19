@@ -3,7 +3,6 @@
 
 import cv2
 import rospy
-import numpy as np
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
@@ -39,7 +38,7 @@ class DetectPaperBag():
     def img_listener(self,img):
         self.img = self.bridge.imgmsg_to_cv2(img,"bgr8")
         self.clear_val()
-        results = self.model(source=self.img,conf=0.7)
+        results = self.modelre(source=self.img,conf=0.7)
         boxes = results[0].boxes
         for box in boxes:
             x,y,w,h = [int(i) for i in box.xywh[0]]
