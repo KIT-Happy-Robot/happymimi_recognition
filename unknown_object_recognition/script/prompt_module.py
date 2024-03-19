@@ -6,7 +6,7 @@ import yaml
 import roslib
 import rosparam
 
-class Prompt():
+class PromptModule():
     def __init__(self):
         #lists = rospy.get_param('objects_list', [])
         self.loadLists()
