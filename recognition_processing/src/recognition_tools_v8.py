@@ -151,6 +151,7 @@ class RecognitionToolsV8(object):
                     y_axis = int(i.bbox.center.y)
                     coordinate_list.append([bbox_list[j],[str(y_axis),str(x_axis)]])
                     print(coordinate_list)
+            coordinate_list.append([bbox_list[i], [int(bb[i].center.y), int(bb[i].center.x)]])
 
         # ソート
         if sort_option == 'left':

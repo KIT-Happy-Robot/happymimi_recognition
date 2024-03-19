@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
+  vision_msgs
   geometry_msgs
   actionlib_msgs
   happymimi_msgs
@@ -29,9 +30,11 @@ add_service_files(
   MultipleLocalize.srv
   PositionEstimator.srv
   depth_meter.srv
+  LeftRight2xyz.srv
   Clip.srv
   ITT.srv
   UorToGrasp.srv
+  UOR.srv
   UorClip.srv
   UorYolo.srv
   UorGpt.srv
@@ -51,6 +54,7 @@ generate_messages(
   std_msgs
   sensor_msgs
   geometry_msgs
+  vision_msgs
   actionlib_msgs
   happymimi_msgs
 )
