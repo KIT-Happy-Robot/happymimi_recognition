@@ -22,16 +22,20 @@ class ImageModule():
         self.bridge = CvBridge()
         self.parent_dir = Path(__file__).parent.resolve()
         self.image_dir = self.parent_dir.parent/"image/" # ,,/unknown_object_recognition/image
-        self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
-    def rosInit(self, head=True, head_depth=False, arm=False, arm_depth=False, depth_musk=True):
+        
+    def rosInit(self, head=True, head_depth=False, arm=False, arm_depth=False, usb_cam=False, depth_musk=False):
         rospy.loginfo(f"\nImageHub: Initializing ROS: head_depth:{head_depth}, arm:{arm}, arm_depth:{arm_depth}")
         if head:
             if not depth_musk: rospy.Subscriber('/camera/color/image_raw', Image, self.headColorCB, queue_size=1)
-            else: rospy.Subscriber('camera/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
+            if depth_musk:
+                self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
+                rospy.Subscriber('camera/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
                 #self.pub = rospy.Publisher('camera/color/depth_mask',Image,queue_size=10)
         if head_depth: rospy.Subscriber('/camera/depth/image_raw', Image, self.headDepthCB, queue_size=1)###
         if arm: rospy.Subscriber('/camera/color/image_raw_arm', Image, self.armColorCB, queue_size=1)
         if arm_depth: rospy.Subscriber('/camera/depth/image_raw_arm', Image, self.armDepthCB, queue_size=1)###
+        if arm_depth: rospy.Subscriber('/camera/depth/image_rect_raw_arm', Image, self.armColorCB, queue_size=1)###
+        if usb_cam: rospy.Subscriber('/usb_cam/image_raw', Image, self.usbcamCB, queue_size=1)###
         #rospy.Subscriber('/camera/color/image_raw_arm', Image, self.CB, queue_size=1)
         #rospy.Subscriber('/yolo_result', Image, self.yoloCB)
     def headColorCB(self, msg): self.head_color_image = msg
@@ -41,8 +45,10 @@ class ImageModule():
     def headDepthCB(self, msg): self.head_depth_image = msg
     def armColorCB(self, msg): self.arm_color_image = msg
     def armDepthCB(self, msg): self.arm_depth_image = msg
+    def usbcamCB(self, msg): self.usb_cam_image = msg
     def getHeadCvImage(self): return self.bridge.imgmsg_to_cv2(self.head_color_image) #,desired_encoding="rgb8")
     def getArmCvImage(self): return self.bridge.imgmsg_to_cv2(self.arm_color_image)
+    def getUsbCvImage(self): return self.bridge.imgmsg_to_cv2(self.usb_cam_image)
     def getHeadJpegImage(self): # CV -> Jpeg
         jpeg_data = cv2.imencode(".jpg", self.getHeadCvImage())[1].tobytes() # (成功フラグ, エンコードデータ)のタプル2要素目をバイト列に変換
         with open("head_image.jpg", "wb") as f:
@@ -81,8 +87,26 @@ class ImageModule():
         return cv_image
     def convertCvRos(self, cv_image): return self.bridge.cv2_to_imgmsg(cv_image) #encoding="bgr8")
     def convertCvBase64(self, cv_image):
-        _, encoded_image = cv2.imencode('.png', cv_image)
+        _, encoded_image = cv2.imencode(".jpg", cv_image) #'.png', cv_image)
         return base64.b64encode(encoded_image).decode('utf-8')
+    def saveCvJpeg(self, cv_image):
+        try:
+            file_path = os.path.join(self.image_dir, "output.jpg")
+            cv2.imwrite(file_path, cv_image)
+            rospy.loginfo("Image saved as: {}".format(file_path))
+            return file_path
+        except Exception as e:
+            rospy.logerr("Error saving image: {}".format(str(e)))
+            return None
+    def readImageBase64(self, image_path):
+        try:
+            with open(image_path, "rb") as image_file:
+                encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+            rospy.loginfo("Image converted to Base64")
+            return encoded_image
+        except Exception as e:
+            rospy.logerr("Error converting image to Base64: {}".format(str(e)))
+            return None
     def converJpgRos(self, jpg_image):
         np_arr = np.frombuffer(jpg_image, np.uint8)
         cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
