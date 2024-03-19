@@ -5,12 +5,10 @@
 import os
 import yaml
 import numpy as np
-from pathlib import Path
-import cv2
+
 import open3d as o3d
 
 import rospy
-import cv_bridge
 from happymimi_recognition_msgs import UOR, UORResponse
 from pc_module import PointCloudModule
 
