@@ -1,23 +1,43 @@
+#!/usr/bin/env python3
+
+# Desc:
+
+import sys
+import time
+import rospy
+#from sensor_msgs.msg import Image
+#from cv_bridge import CvBridge
+from ultralytics_ros import YoloResult
+from happymimi_msgs.srv import StrTrg # for Finding
+from happymimi_recognition_msgs import UorYolo, UorYoloResponse
+import roslib
+base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
+sys.path.insert(0, base_path)
+import label_tmp
+from image_module import ImageModule
+import numpy as np
+
 
 # IN: Sub(Yolo-world Results /uor/yolo_result) | OUT: Server (detecttion and localizeation, finding)
-class UnknownObjectYoloServer(YoloHub):
+class UnknownObjectYoloServer():
     def __init__(self):
         rospy.init_node("uor_yolo_server")
         rospy.loginfo("Initializing Node: ** uor_yolo_server **")
         
-        rospy.Subscriber("/uor/yolo_result", YoloResult, self.bboxCB)
+        rospy.Subscriber("/uor/yolo_result", YoloResult, self.yoloCB)
         # IN: classes | OUT: bbox(Pose2D center[x,y,theta], size_x 0.0, size_y 0.0)
-        self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.yoloCB)
+        self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.serviceCB)
         self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
         # 物体分類サーバー　IN: classes[], camera_name, area | OUT: class_name, item_category
         #self.clasify_ss = rospy.Service("/uor/yolo_server/clasifition", UorYolo, self.clasifyCB)
         # 物体検出、検知サーバー IN: Classes| OUT: results["obj":[xyz], conf,,,]
         self.detecttions_ss = self.rospy.Service("/uor/yolo_server/detections", UorYolo, self.detectService)
         self.IM = ImageModule()
-        self.IM.rosInit()
+        self.IM.rosInit(head_depth=True)
         rospy.loginfo("UnknownObjectYoloServer: Im Ready to response...")
+        
     # subs
-    def bboxCB(self, bb):
+    def yoloCB(self, bb):
         self.update_time = time.time()
         self.update_flg = True
         self.bbox = bb
@@ -67,11 +87,12 @@ class UnknownObjectYoloServer(YoloHub):
         return result_list
         # 物体検出結果からラベル名のリストを取得
         #detected_labels = [obj.label for obj in yolo_result.objects]
-        
-    def detectObject(self, classes, image):
+    
+    # 生のリザルトなので要整形
+    def getPredictResults(self, classes, image):
         self.model.set_classes(classes)
         results = self.model.predict(image, 
-                                     device=self.device
+                                     device=self.device,
                                      save=True)
         # Show results
         results[0].show()
@@ -81,15 +102,10 @@ class UnknownObjectYoloServer(YoloHub):
         #results_lists = self.getResultList(results)
         return results
 
-
-    # IN: a class name(data) | OUT: Bool(result)
+    # service ------------------------------
+    def serviceCB(self, yolo_msg):
+        yolo_result = self.getPredictResults(msg)
         
-    # service -------------------------------
-    def yoloCB(self, msg):
-        yolo_result = self.detectObject()
-        
-        
-    def serviceCB(): pass
     def getFindingResult(self, results): ###
         pass
     def findServiceCB(self, req):

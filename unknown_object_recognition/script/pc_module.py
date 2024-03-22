@@ -44,8 +44,10 @@ class PointCloudModule():
             self.head_color_points_array.append([p[0], p[1], p[2]])
         self.o3d_color_pcd = o3d.geometry.PointCloud()
         self.o3d_color_pcd.points = o3d.utility.Vector3dVector(msg.xyz) #座標データをOpen3DのPointCloudに追加
-    #def armPointsCB(self, msg):
-    #def armColorPointsCB(self, msg):
+    def armPointsCB(self, msg):
+        self.arm_o3d_pcd = o3d.geometry.PointCloud()
+        self.arm_o3d_pcd.points = o3d.utility.Vector3dVector(msg.xyz)
+    def armColorPointsCB(self, msg): pass
     def depthImageCB(self, msg): # OUT: self.depth_image
         try: self.depth_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
         except Exception as e: rospy.logerr(e)

@@ -22,7 +22,6 @@ sys.path.insert(0, base_path)
 from image_module import ImageModule
 from prompt_module import PromptModule
 import rospy
-
 from happymimi_recognition_msgs.srv import UorGpt, UorGptResponse
 
 # テスト画像ファイルの準備
@@ -71,6 +70,7 @@ def requestGpt(image, prompt=None): #{base64_image}"
     print("\nGPT result: "+result); return result
 
 IM = ImageModule()
+IM.rosInit(usb_cam=True)
 
 def encodeImage(image_path):
     with open(image_path, "rb") as image_file:
@@ -84,8 +84,15 @@ def serviceCB(req):
     #ros_img = IM.converRosJpg(req.image)
     if req.camera_name == "head":
         cv_img = IM.getHeadCvImage()
+    if req.camera_name == "arm":
+        cv_img = IM.getArmCvImage()
+    if req.camera_name == "usbcam":
+        cv_img = IM.getUsbCvImage()
     else: cv_img = IM.autoConvert(cv_img, "cv")
-    base_img = IM.convertCvBase64(cv_img)
+    #base_img = IM.convertCvBase64(cv_img) ###
+    image_path = IM.saveCvJpeg(cv_img)
+    base_img=IM.readImageBase64(image_path)
+    
     result= requestGpt(image=base_img, prompt=req.prompt)
     SrvRes.result = result
     return SrvRes
