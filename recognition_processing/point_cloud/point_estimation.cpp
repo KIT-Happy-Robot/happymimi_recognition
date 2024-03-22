@@ -93,6 +93,7 @@ void ThreeDimensionalPositionEstimator::pointCB(const sensor_msgs::PointCloud2 i
     realsense_point_cloud.publish(nearest_point_msg);
 
     // Publish a red marker at the nearest point for visualization in RViz
+    /*
     visualization_msgs::Marker marker;
     marker.header = input_point.header;
     marker.ns = "nearest_point_marker";
@@ -110,6 +111,7 @@ void ThreeDimensionalPositionEstimator::pointCB(const sensor_msgs::PointCloud2 i
     marker.color.b = 0.0;
     marker.color.a = 1.0;
     marker_pub.publish(marker);
+    */
 }
 
 bool ThreeDimensionalPositionEstimator::convertImage(const sensor_msgs::ImageConstPtr& input_image, cv::Mat &output_image){
