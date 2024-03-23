@@ -8,6 +8,7 @@
 import os
 import yaml
 import numpy as np
+import sys
 import ros_numpy
 import open3d as o3d
 
@@ -16,6 +17,9 @@ from std_srvs.srv import Empty
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import Point
 from happymimi_recognition_msgs.srv import UOR, UORResponse
+import roslib
+base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
+sys.path.insert(0, base_path) 
 import sys
 import roslib
 base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
@@ -87,7 +91,7 @@ def main():
     
     #TOS.showPcd()
     rospy.spin()
-
+    
 if __name__ == "__main__":
     while True: 
         try:
