@@ -143,7 +143,7 @@ class RecognitionToolsV8(object):
                 if not(bbox_list[i] in self.object_dict['any']): continue
             elif object_name != '':
                 if not(bbox_list[i] == object_name): continue
-            coordinate_list.append([bbox_list[i], [int((bb[i].ymin + bb[i].ymax)/2), int((bb[i].xmin + bb[i].xmax)/2)]])
+            coordinate_list.append([bbox_list[i], [int(bb[i].center.y), int(bb[i].center.x)]])
 
         # ソート
         if sort_option == 'left':
