@@ -9,13 +9,13 @@ from sensor_msgs.msg import Image
 from ultralytics import YOLO
 #from happymimi_recognition_msgs.srv import MultipleLocalize,MultipleLocalizeResponse
 from geometry_msgs.msg import Point
-from ros1_yolov8.srv import LeftRight2xyz,LeftRight2xyzResponse
+from happymimi_recognition_msgs.srv import LeftRight2xyz,LeftRight2xyzResponse
 
 class DetectPaperBag():
     def __init__(self):
         rospy.init_node('DetectPaperBag',anonymous=True)
         self.bridge = CvBridge()
-        self.model = YOLO("/home/ayu/catkin_ws/src/ros1_yolov8/src/paper_bag.pt")
+        self.model = YOLO("/home/mimi/external_ws/src/ros1_yolov8/paper_bag.pt")
         #self.model = YOLO("yolov8n.pt")
         #rospy.Subscriber('/yolo_image',Image,self.img_listener)  
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)
