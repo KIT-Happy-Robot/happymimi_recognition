@@ -3,7 +3,6 @@
 
 import cv2
 import rospy
-import numpy as np
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 from ultralytics import YOLO
@@ -46,7 +45,11 @@ class DetectPaperBag():
 
     def Coordinate_Paperbag(self):
         self.clear_val()
+<<<<<<< HEAD
         results = self.model(source=self.img,conf=0.6)
+=======
+        results = self.modelre(source=self.img,conf=0.7)
+>>>>>>> 4277ae76507249a290c1428ff5d8ab2f184c0607
         boxes = results[0].boxes
         for box in boxes:
             x,y,w,h = [int(i) for i in box.xywh[0]]
