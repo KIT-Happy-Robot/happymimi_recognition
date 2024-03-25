@@ -5,15 +5,15 @@
 import sys
 import time
 import rospy
-#from sensor_msgs.msg import Image
-#from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 from ultralytics_ros import YoloResult
 from happymimi_msgs.srv import StrTrg # for Finding
 from happymimi_recognition_msgs import UorYolo, UorYoloResponse
 import roslib
 base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
 sys.path.insert(0, base_path)
-import label_tmp
+import prompt_module
 from image_module import ImageModule
 import numpy as np
 
@@ -25,6 +25,7 @@ class UnknownObjectYoloServer():
         rospy.loginfo("Initializing Node: ** uor_yolo_server **")
         
         rospy.Subscriber("/uor/yolo_result", YoloResult, self.yoloCB)
+        self.image_sc = rospy.ServiceProxy("/image_server", Image)
         # IN: classes | OUT: bbox(Pose2D center[x,y,theta], size_x 0.0, size_y 0.0)
         self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.serviceCB)
         self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
@@ -120,10 +121,10 @@ class UnknownObjectYoloServer():
     
     
 
-if __name__ = "__main__"
+if __name__ == "__main__":
     try:
         UOYS = UnknownObjectYoloServer()
         rospy.spin()
     except:
         pass
-self.applyFormat(results)
+

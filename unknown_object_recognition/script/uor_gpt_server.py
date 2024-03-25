@@ -22,7 +22,7 @@ sys.path.insert(0, base_path)
 from image_module import ImageModule
 from prompt_module import PromptModule
 import rospy
-from happymimi_recognition_msgs.srv import UorGpt, UorGptResponse
+from happymimi_recognition_msgs.srv import UorVlm, UorVlmResponse
 
 # テスト画像ファイルの準備
 parent_dir = Path(__file__).parent.resolve()
@@ -80,7 +80,7 @@ def encodeImage(image_path):
 base64_image = encodeImage(img_file)
 
 def serviceCB(req):
-    SrvRes = UorGptResponse()
+    SrvRes = UorVlmResponse()
     #ros_img = IM.converRosJpg(req.image)
     if req.camera_name == "head":
         cv_img = IM.getHeadCvImage()
@@ -101,7 +101,7 @@ def main():
     rospy.loginfo("Initialing Node: uor_gpt_server")
     rospy.init_node('uor_gpt_server')
     IM.rosInit()
-    rospy.Service("/uor/gpt_server", UorGpt, serviceCB)
+    rospy.Service("/uor/gpt_server", UorVlm, serviceCB)
     rospy.loginfo("Initialized Node: uor_gpt_server")
     
     rospy.spin()
