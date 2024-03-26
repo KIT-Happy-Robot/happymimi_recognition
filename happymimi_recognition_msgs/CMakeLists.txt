@@ -33,11 +33,10 @@ add_service_files(
   LeftRight2xyz.srv
   Clip.srv
   ITT.srv
+  CameraImage.srv
   UorToGrasp.srv
-  UOR.srv
-  UorClip.srv
   UorYolo.srv
-  UorGpt.srv
+  UorVlm.srv
   PositionEstimatorPCL.srv
 )
 
