@@ -98,6 +98,8 @@ target_link_libraries(planar_segmentation ${catkin_LIBRARIES})
 #############
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
+
+#catkin_python_setup()
 catkin_install_python(PROGRAMS
   script/image_server.py
   script/image_module.py

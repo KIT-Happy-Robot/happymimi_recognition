@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 
-# Desc:
+"""
+ROS server: return data from results of yolo-world zeroshot prediction.
+IN: classes(include class list name), camera name,,, | OUT: ids, names, bbox sizes, center coords
+Requirements:
+    pip3 install ultralytics
+    ...
+References:
+    - https://docs.ultralytics.com/models/yolo-world/#key-features
+    - https://docs.ultralytics.com/#where-to-start
+    - https://docs.ultralytics.com/ja/reference/engine/results/
+Author: washio
+"""
 
 import sys
 import yaml
@@ -9,9 +20,9 @@ import rospy
 from sensor_msgs.msg import Image
 from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 from cv_bridge import CvBridge
-from ultralytics_ros import YoloResult
+from ultralytics_ros.msg import YoloResult
 from happymimi_msgs.srv import StrTrg # for Finding
-from happymimi_recognition_msgs import UorYolo, UorYoloResponse
+from happymimi_recognition_msgs.srv import UorYolo, UorYoloResponse
 from pathlib import Path
 # import roslib
 # base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'

@@ -12,7 +12,7 @@ default:
 tidyup_raw:
   - noodle # cup, white cup
   - treat box # green box
-  - {color} box
+  - green box
   - potato chips ### orange cup
   - detergent # yellow bottle
   - cup ### blue cup
