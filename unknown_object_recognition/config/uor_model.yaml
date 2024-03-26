@@ -15,3 +15,5 @@ clip:
   # openai/clip-vit-base-patch32
 blip:
   model:
+gemini:
+  model: "gemini-pro-vision" # 'gemini-pro','gemini-pro-vision'

@@ -13,7 +13,7 @@ import ros_numpy
 import open3d as o3d
 
 import rospy
-from cv_bridge import CvBridge
+from std_srvs.srv import Empty
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import Point
 from happymimi_recognition_msgs.srv import UOR, UORResponse
@@ -35,11 +35,12 @@ class TableObjectServer():
         self.PCM = PointCloudModule()
         self.PCM.rosInit(color=True)
         self.to_ss = rospy.Service("/uor/table_object_server", UOR, self.serviceCB)
+        self.show_o3d_ss = rospy.Service("/uor/show_o3d_server", Empty, self.showPcd)
         # DEBUG
         if debug: 
             rospy.loginfo("table_object_server: DEBUG Mode")
             self.pc2_pub = rospy.Publisher('/uor/processed_pointcloud', PointCloud2, queue_size=10)
-            self.rate = rospy.Rate(10)  # パブリッシュの周波数
+            self.rate = rospy.Rate(2)  # パブリッシュの周波数
             #if self.PCM.o3d_pcd == None:
                 #self.publishO3dPc(self.PCM.extractPointsOnTable()) #o3d_color_pcd))
             # self.PCM.
@@ -58,6 +59,7 @@ class TableObjectServer():
         while not rospy.is_shutdown():
             o3d_pcd = self.PCM.extractPointsOnTable(self.PCM.o3d_color_pcd)
             pc2_msg = self.PCM.convertO3dPc2(o3d_pcd)
+            # Pub tf setting
             header = rospy.Header()
             header.stamp = rospy.Time.now()
             header.frame_id = "camera_link" # Set the appropriate frame ID
@@ -68,30 +70,39 @@ class TableObjectServer():
             rospy.sleep(1.0)  # Adjust the publishing rate as needed
             
     def showO3dPoints(self, pcd):
-        plane_pcd = o3d.io.read_point_cloud("./pcd_show.ply")
+        plane_pcd = o3d.io.read_point_cloud(pcd)
         vis = o3d.visualization.Visualizer()
         vis.create_window()
         vis.add_geometry(plane_pcd)
         vis.run()
+    def showPcd(self):
+        #self.showO3dPoints(self.PCM.o3d_color_pcd)
+        while True:
+            print("self.PCM.o3d_color_pcd" + self.PCM.o3d_color_pcd)
+            rospy.sleep(0.5)
         
     def debugPlane(self, option):
         if option == "objects_cloud":
             objects_points = self.PCM.extractPointsOnTable(self.PCM.o3d_color_pcd)
-            
-        
-    def showPcd(self):
-        self.showO3dPoints(self.o3d_color_pcd)    
         
 
 def main():
     TOS = TableObjectServer(debug=True)
     
+    #TOS.showPcd()
     rospy.spin()
-
-if __name__ == "__main__": 
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("KeyboardInterrupt")
-    except rospy.ROSInterruptException:
-        print("ROSInterruptException")
+    
+if __name__ == "__main__":
+    while True: 
+        try:
+            #main()
+            PCM=PointCloudModule()
+            PCM.rosInit(color=True)
+            o3d_color_pc = PCM.getHeadO3dColorPoints()
+            rospy.sleep(3.0)
+        except AttributeError as ae:
+            print("AttributeError:" + str(ae))
+        except KeyboardInterrupt:
+            print("KeyboardInterrupt")
+        except rospy.ROSInterruptException:
+            print("ROSInterruptException")

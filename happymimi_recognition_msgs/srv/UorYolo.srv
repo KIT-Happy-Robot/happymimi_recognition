@@ -1,5 +1,6 @@
 string[] classes # 1 class
-string option # "all", "nearest" 
+string option # =="all" ("nearest",,,
+string camera_name # =="head" (None, "arm",,,
 ---
 string class
 geometry_msgs/Point[] point

@@ -1,6 +1,0 @@
-
-string prompt
-string camera_name
-#sensor_msgs/Image image
----
-string result
