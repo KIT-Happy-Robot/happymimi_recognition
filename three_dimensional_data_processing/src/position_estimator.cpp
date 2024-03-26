@@ -118,6 +118,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   res.point.x = centroid_x / 1000;
   res.point.y = centroid_y / 1000;
   res.point.z = centroid_z / 1000 + realsense_height;
+  res.point.z += 0.05;
   ROS_INFO("x:%f, y:%f, z:%f", res.point.x, res.point.y, res.point.z);
 
   return true;

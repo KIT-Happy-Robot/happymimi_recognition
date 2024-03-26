@@ -9,14 +9,14 @@ from ultralytics import YOLO
 from geometry_msgs.msg import Point
 from happymimi_recognition_msgs.srv import LeftRight2xyz,LeftRight2xyzResponse
 
-class DetectPaperBag():
+class CoordinatePaperBag():
     def __init__(self):
-        rospy.init_node('DetectPaperBag',anonymous=True)
+        rospy.init_node('Coordinate_PaperBag_node',anonymous=True)
         self.bridge = CvBridge()
-        self.model = YOLO("/home/ayu/catkin_ws/src/ros1_yolov8/src/paper_bag.pt")  
+        self.model = YOLO("/home/mimi/external_ws/src/ros1_yolov8/paper_bag.pt")  
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)
         rospy.Subscriber('/camera/color/image_raw',Image,self.img_listener)
-        srv = rospy.Service('Coordinate_PaperBag',LeftRight2xyz,self.Coordinate_srv)
+        srv = rospy.Service('Coordinate_PaperBag_srv',LeftRight2xyz,self.Coordinate_srv)
         rospy.loginfo("start Coordinate Paperbag")
         rospy.loginfo("waiting...")
 
@@ -43,13 +43,12 @@ class DetectPaperBag():
         except CvBridgeError as e:
             print("depth_listener:",e)
 
-    def Coordinate_Paperbag(self):
+    def coordinate_Paperbag(self):
         self.clear_val()
-<<<<<<< HEAD
-        results = self.model(source=self.img,conf=0.6)
-=======
-        results = self.modelre(source=self.img,conf=0.7)
->>>>>>> 4277ae76507249a290c1428ff5d8ab2f184c0607
+
+        #results = self.model(source=self.img,conf=0.6)
+        results = self.model(source=self.img,conf=0.7)
+
         boxes = results[0].boxes
         for box in boxes:
             x,y,w,h = [int(i) for i in box.xywh[0]]
@@ -77,14 +76,13 @@ class DetectPaperBag():
             self.put_x1 = [-1,-1]
             self.put_y = [-1,-1]
             self.put_depth = [-1,-1]
-        self.r.sleep()
 
 
 
     def Coordinate_srv(self,LeftRight):
-        self.Coordinate_Paperbag()
-        print(LeftRight)
-        if LeftRight == "Left":
+        self.coordinate_Paperbag()
+        #print(LeftRight)
+        if LeftRight == "left":
             return LeftRight2xyzResponse(self.put_x1[0],self.put_y[0],self.put_depth[0])
         else:
             return LeftRight2xyzResponse(self.put_x1[-1],self.put_y[-1],self.put_depth[-1])
@@ -92,7 +90,7 @@ class DetectPaperBag():
 
 if __name__ == '__main__':
     try:
-        DetectPaperBag()  
+        CoordinatePaperBag()  
         rospy.spin()   
     except rospy.ROSInitException:
         print('Shutting down')
