@@ -35,9 +35,9 @@ add_service_files(
   ITT.srv
   UorToGrasp.srv
   UOR.srv
-  UorClip.srv
+  #UorClip.srv
   UorYolo.srv
-  UorGpt.srv
+  #UorGpt.srv
   PositionEstimatorPCL.srv
 )
 

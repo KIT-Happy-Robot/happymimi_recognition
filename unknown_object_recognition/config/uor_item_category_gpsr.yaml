@@ -1,0 +1,52 @@
+drink:
+ - orange_juice
+ - red wine
+ - milk
+ - iced_tea
+ - cola
+ - tropical_juice
+ - juice_pack
+
+fruit:
+ - apple
+ - pear
+ - lemon
+ - peach
+ - banana
+ - strawberry
+ - orange
+ - plum
+
+snack:
+ - cheezit
+ - cornflakes
+ - pringles
+
+food:
+ - tuna
+ - sugar
+ - strawberry_jello
+ - tonato_soup
+ - mustard
+ - chocolate_jello
+ - spam
+ - coffee_grounds
+
+dish:
+ - plate
+ - fork
+ - spoon
+ - cup
+ - knife
+ - bowl
+
+toy:
+ - rubiks_cube
+ - soccer_ball
+ - dice
+ - tennis_ball
+ - baseball
+
+cleaning_supply:
+ - cleanser
+ - sponge

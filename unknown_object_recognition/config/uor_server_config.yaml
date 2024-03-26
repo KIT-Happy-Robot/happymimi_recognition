@@ -6,4 +6,4 @@ model:
   - yolov8m-world.pt
 
 confidence:
-  - 0.1
+  - 0.05
