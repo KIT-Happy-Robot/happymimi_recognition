@@ -35,6 +35,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
   // Publish the data
   pub.publish (output);
+  
 }
 
 int

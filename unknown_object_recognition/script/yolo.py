@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
-# Yolo-worldで特定のラベルのリストの情報に従って、
-# 未知の物体の位置、物体名などの情報を返すROSサービスサーバーノード
-# uor_moduleのYoloクラスやその関数を使って、未知物体のバウンディングボックスを取得やラベル名の取得をする。
-# IN: 
+"""
+Yolo-worldで特定のラベルのリストの情報に従って、
+未知の物体の位置、物体名などの情報を返すROSサービスサーバーノード
+uor_moduleのYoloクラスやその関数を使って、未知物体のバウンディングボックスを取得やラベル名の取得をする。
+IN:
+Author: washio
+""" 
 
 import os
 import inspect # DEBUG
@@ -23,7 +26,7 @@ from vision_msgs.msg import BoundingBox2D
 from happymimi_msgs.srv import StrTrg # for Finding
 from happymimi_recognition_msgs import UorYolo, UorYoloResponse
 from image_module import ImageModule
-import label_tmp
+import prompt_tmp
 
 
 class YoloHub():
@@ -36,7 +39,7 @@ class YoloHub():
             self.object_class_list = yaml.safe_load(file)
         self.default_classes = self.object_class_list["default"]
         self.tidyup_classes = self.object_class_list["tidyup"]
-        self.lt = label_tmp ###
+        
         self.lt_tu = self.tl.tidyup_classes
         # Set Config
         self.device = self.getDevice()
@@ -55,19 +58,22 @@ class YoloHub():
                                                 Image, 
                                                 queue_time=1) # Yolo画像パブリッシュ
         self.results_pub = rospy.Publisher("/uor/yolo_result", YoloResult, queue_time=1)
-        
+        self.yolo_ss = rospy.Service("/uor/yolo_result_server", YoloResult, queue_time=1)
+
         # data type
         self.pseudo_results = []
         self.element_type = {'class_id': 0,'bbox': [], 'conf': 0.0, 'class_prob': 0.0}
         self.class_id_to_name = {} # id:"class_name",,,
-
+        self.conf_thres = self.uor_model_config["yolo"]["conf_thres"]
+        
     # ultralytics_rosのtrackerノードから持ってきただけ
     def imageCB(self, msg):
         YR = YoloResult()
         cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
-        results = self.model.predict(cv_image, save=True)
-        
-        # results = self.model.track(###
+        results = self.model.predict(source=cv_image,
+                                    conf=self.conf_thres,
+                                    save=True)
+        # results = self.model.predict(###
         #     source=cv_image,
         #     conf=self.conf_thres,
         #     iou=self.iou_thres,
@@ -77,24 +83,29 @@ class YoloHub():
         #     device=self.device,
         #     verbose=False,
         #     retina_masks=True)
-        # if results is not None:
-        #     yolo_result_msg = YoloResult()
-        #     yolo_result_image_msg = Image()
-        #     yolo_result_msg.header = msg.header
-        #     yolo_result_image_msg.header = msg.header
-        #     yolo_result_msg.detections = self.createDetectionsArray(results)
-        #     yolo_result_image_msg = self.create_result_image(results)
-        #     if self.use_segmentation:
-        #         yolo_result_msg.masks = self.create_segmentation_masks(results)
-        #     self.results_pub.publish(yolo_result_msg)
-        #     self.result_image_pub.publish(yolo_result_image_msg)
+        if results is not None:
+            yolo_result_msg = YoloResult()
+            yolo_result_image_msg = Image()
+            yolo_result_msg.header = msg.header
+            yolo_result_image_msg.header = msg.header
+            yolo_result_msg.detections = self.createDetectionsArray(results)
+            yolo_result_image_msg = self.createResultImage(results)
+            if self.use_segmentation:
+                yolo_result_msg.masks = self.create_segmentation_masks(results)
+            self.results_pub.publish(yolo_result_msg)
+            self.result_image_pub.publish(yolo_result_image_msg)
 
     def createDetectionsArray(self, results):
         detections_msg = Detection2DArray()
+        self.bbox_list = []
+        bbox_data = {}
+        self.points = []
         bounding_box = results[0].boxes.xywh
         classes = results[0].boxes.cls
+        names = results[0].names
         confidence_score = results[0].boxes.conf
-        for bbox, cls, conf in zip(bounding_box, classes, confidence_score):
+        i = 0
+        for bbox, cls, name, conf in zip(bounding_box, classes, names, confidence_score):
             detection = Detection2D()
             detection.bbox.center.x = float(bbox[0])
             detection.bbox.center.y = float(bbox[1])
@@ -105,7 +116,11 @@ class YoloHub():
             hypothesis.score = float(conf)
             detection.results.append(hypothesis)
             detections_msg.detections.append(detection)
-        return detections_msg    
+            self.points.append([int(bbox[0]), int(bbox[1])])
+            bbox_dict = {'id': int(cls), 'name': str(name), 'center': [bbox[0], bbox[1]], 'size': [bbox[2], bbox[3]]}
+            self.bbox_list.append(bbox_dict)
+            i =+ 1
+        return detections_msg, self.bbox_list
     
     def createResultImage(self, results):
         plotted_image = results[0].plot(
@@ -115,7 +130,7 @@ class YoloHub():
             font=self.result_font,
             #labels=self.result_labels,
             #boxes=self.result_boxes,
-        )
+            )
         result_image_msg = self.bridge.cv2_to_imgmsg(plotted_image, encoding="bgr8")
         #cv2.imshow("yolov8",plotted_image)
         #cv2.waitKey(1)
@@ -169,3 +184,31 @@ class YoloHub():
             detections.append([class_name, x1, y1, x2, y2], confidence)
             print(f"Detected {class_name} with confidence {confidence} at [{x1}, {y1}, {x2}, {y2}]")
         return detections
+
+    def serviceCB(self, _):
+        # JPEG形式のバイナリデータをファイルに保存する場合
+        with open("output.jpg", "wb") as f:
+            f.write(self.jpeg_data.tobytes())
+        
+        self.param_update()
+        results = self.model.predict('output.jpg',conf=self.conf[0])
+        if results[0].boxes:
+            for j in range(len(results[0].boxes)):
+                xmin,ymin,xmax,ymax =[int(i) for i in results[0].boxes.xyxy[j]]
+                self.point_data.append([int(xmax - xmin), int(ymax - ymin)])
+            
+            id = int(results[0].boxes.cls)
+            self.point_data_dict = {results[0].names[id] + f"_{i}": coord for i, coord in enumerate(self.point_data)}
+            self.point_data = []
+        
+        else:
+            self.point_data_dict = {}
+        
+        # Show results
+        results[0].show()
+        
+        with open(yaml_path+point_data_yaml_name, 'w') as file:
+            yaml.dump(self.point_data_dict, file)
+        
+        return "True"
+        

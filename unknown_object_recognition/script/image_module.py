@@ -23,31 +23,47 @@ class ImageModule():
         self.parent_dir = Path(__file__).parent.resolve()
         self.image_dir = self.parent_dir.parent/"image/" # ,,/unknown_object_recognition/image
         
-    def rosInit(self, head=True, head_depth=False, arm=False, arm_depth=False, usb_cam=False, depth_musk=False):
+    def rosInit(self, multiple=False, head=True, head_depth=False, arm=False, arm_depth=False, usb_cam=False, depth_musk=False):
         rospy.loginfo(f"\nImageHub: Initializing ROS: head_depth:{head_depth}, arm:{arm}, arm_depth:{arm_depth}")
-        if head:
-            if not depth_musk: rospy.Subscriber('/camera/color/image_raw', Image, self.headColorCB, queue_size=1)
+        if multiple:
+            rospy.Subscriber('/camera1/color/image_raw', Image, self.headColorCB, queue_size=1)
             if depth_musk:
-                self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
-                rospy.Subscriber('camera/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
-                #self.pub = rospy.Publisher('camera/color/depth_mask',Image,queue_size=10)
-        if head_depth: rospy.Subscriber('/camera/depth/image_raw', Image, self.headDepthCB, queue_size=1)###
-        if arm: rospy.Subscriber('/camera/color/image_raw_arm', Image, self.armColorCB, queue_size=1)
-        if arm_depth: rospy.Subscriber('/camera/depth/image_raw_arm', Image, self.armDepthCB, queue_size=1)###
-        if arm_depth: rospy.Subscriber('/camera/depth/image_rect_raw_arm', Image, self.armColorCB, queue_size=1)###
-        if usb_cam: rospy.Subscriber('/usb_cam/image_raw', Image, self.usbcamCB, queue_size=1)###
-        #rospy.Subscriber('/camera/color/image_raw_arm', Image, self.CB, queue_size=1)
-        #rospy.Subscriber('/yolo_result', Image, self.yoloCB)
+                self.meter = rosparam.get_param('/camera1/max_depth_limit')
+                rospy.Subscriber('camera1/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
+            if head_depth: rospy.Subscriber('/camera1/depth/image_raw', Image, self.headDepthCB, queue_size=1)
+            rospy.Subscriber('/camera2/color/image_raw', Image, self.armColorCB, queue_size=1)
+            if depth_musk:
+                self.meter = rosparam.get_param('/camera2/max_depth_limit')
+                rospy.Subscriber('/camera2/color/depth_mask', Image, self.armDepthMuskColorCB, queue_size=1)
+            if arm_depth: rospy.Subscriber('/camera2/depth/image_raw_arm', Image, self.armDepthCB, queue_size=1)
+            #if arm_depth: rospy.Subscriber('/camera2/depth/image_rect_raw_arm', Image, self.armRectCB, queue_size=1)###
+            if usb_cam: rospy.Subscriber('/usb_cam/image_raw', Image, self.usbcamCB, queue_size=1)###
+        else:
+            if head:
+                rospy.Subscriber('/camera/color/image_raw', Image, self.headColorCB, queue_size=1)
+                if depth_musk:
+                    self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
+                    rospy.Subscriber('camera/color/depth_mask',Image, self.headDepthMuskColorCB, queue_size=10)
+                    #self.pub = rospy.Publisher('camera/color/depth_mask',Image,queue_size=10)
+            if head_depth: rospy.Subscriber('/camera/depth/image_raw', Image, self.headDepthCB, queue_size=1)###
+            if arm: rospy.Subscriber('/camera/color/image_raw_arm', Image, self.armColorCB, queue_size=1)
+            if arm_depth: rospy.Subscriber('/camera/depth/image_raw_arm', Image, self.armDepthCB, queue_size=1)###
+            #if arm_depth: rospy.Subscriber('/camera/depth/image_rect_raw_arm', Image, self.armRectCB, queue_size=1)###
+            if usb_cam: rospy.Subscriber('/usb_cam/image_raw', Image, self.usbcamCB, queue_size=1)###
+            #rospy.Subscriber('/yolo_result', Image, self.yoloCB)
     def headColorCB(self, msg): self.head_color_image = msg
         # sensor_msgs/ImageメッセージをOpenCVのcv::Mat形式に変換
         # データ型: uint8 (8ビットの符号なし整数), チャンネル数: 3 (RGB各チャンネル), 画像サイズ: (画像の高さ, 画像の幅)
     def headDepthMuskColorCB(self, msg): self.head_depth_musk_color_image = msg
     def headDepthCB(self, msg): self.head_depth_image = msg
     def armColorCB(self, msg): self.arm_color_image = msg
+    def armDepthMuskCB(self, msg): self.arm_depth_musk_color_image = msg
     def armDepthCB(self, msg): self.arm_depth_image = msg
     def usbcamCB(self, msg): self.usb_cam_image = msg
     def getHeadCvImage(self): return self.bridge.imgmsg_to_cv2(self.head_color_image) #,desired_encoding="rgb8")
+    def getHeadDepthMuskCvImage(self): return self.bridge.imgmsg_to_cv2(self.head_depth_musk_color_image)
     def getArmCvImage(self): return self.bridge.imgmsg_to_cv2(self.arm_color_image)
+    def getArmDepthMuskCvImage(self): return self.bridge.imgmsg_to_cv2(self.arm_depth_musk_color_image)
     def getUsbCvImage(self): return self.bridge.imgmsg_to_cv2(self.usb_cam_image)
     def getHeadJpegImage(self): # CV -> Jpeg
         jpeg_data = cv2.imencode(".jpg", self.getHeadCvImage())[1].tobytes() # (成功フラグ, エンコードデータ)のタプル2要素目をバイト列に変換

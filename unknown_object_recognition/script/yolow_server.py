@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*
 
+import os
 import cv2
 import sys
+<<<<<<< HEAD
 import numpy
+=======
+from pathlib import Path
+>>>>>>> cf86dcfb9102d08e2172a93c5219f1298d844247
 from ultralytics import YOLOWorld
 import rospy
 import roslib
@@ -38,7 +43,11 @@ class YoloWorld_Server():
     def __init__(self):
         self.bridge = CvBridge()
         #rospy.Subscriber('/camera/color/image_raw', Image, self.yolo_topic)
+<<<<<<< HEAD
         rospy.Subscriber('/usb_cam/image_raw', Image, self.yolo_topic)
+=======
+        rospy.Subscriber('/camera/color/depth_mask', Image, self.yolo_topic)
+>>>>>>> cf86dcfb9102d08e2172a93c5219f1298d844247
         rospy.Service('/uor/yolo_server', SetStr,self.yolo_main)
         
         rospy.set_param('/uor/config', yaml_data)
@@ -47,9 +56,12 @@ class YoloWorld_Server():
         model_name = ''.join(self.config["model"])
         self.conf = self.config["confidence"]
         self.model_class = self.config["item"]
-     
+        with open(os.path.join(Path(__file__).parent.resolve().parent), "config/object_class_list.yaml", 'r') as file:
+            self.object_class_list = yaml.safe_load(file)
+        self.tu_items = self.object_class_list["yumeko_tu"]##
+        
         self.model = YOLOWorld(model=model_name)
-        self.model.set_classes(self.model_class)
+        self.model.set_classes(self.tu_items) # self.model_class)
         
         self.jpeg_data = None
         self.data = None
@@ -66,9 +78,8 @@ class YoloWorld_Server():
             return data
         else:
             return [data]  # データを単一要素のリストに変換して返す
-     
+    
     def param_update(self):
-        
         self.config = rospy.get_param('/uor/config', {})
         self.model_name = ''.join(self.config["model"])
         self.conf = self.config["confidence"]
@@ -77,6 +88,7 @@ class YoloWorld_Server():
         self.model_class = self.to_list(self.model_class)
         
         self.model = YOLOWorld(model=self.model_name)
+<<<<<<< HEAD
         self.model.set_classes(self.model_class)
     
     def LocalizeObjectWorld(self,x_point, y_point):
@@ -84,6 +96,10 @@ class YoloWorld_Server():
         Detector.detectorService(x_point, y_point)
         return Detector.object_centroid
     
+=======
+        self.model.set_classes(self.tu_items) # self.model_class)
+        
+>>>>>>> cf86dcfb9102d08e2172a93c5219f1298d844247
     def yolo_main(self, _):
         
         centroid = Point()
