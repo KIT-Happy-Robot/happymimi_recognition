@@ -1,0 +1,42 @@
+default:
+  - noodle
+  - treat box
+  - potato chips
+  - detergent
+  - cup
+  - lunch box
+  - dice
+  - light bulb box
+  - block box
+
+tidyup_raw:
+  - noodle # cup, white cup
+  - treat box # green box
+  - green box
+  - potato chips ### orange cup
+  - detergent # yellow bottle
+  - cup ### blue cup
+  - lunch box ### cup, case, round case
+  - dice ### cup, white block
+  - light bulb box # black box, black block###
+  - block box # treat box, box, block###
+tidyup_fix:
+  - cup #white_cup
+  - green_box #green_long_box # green block
+  - orange_cup
+  - yellow_bottle
+  - bottle # blue_cup
+  - red_cup #case, round case
+  - block #white_block #
+  - box #black box #, black block###
+  - red_box # treat box, box, block###
+yumeko_tu:
+  - cup #noodle
+  - green_box #green_long_box # green block
+  - orange_cup
+  - yellow_bottle ### color bottle
+  - bottle # blue_cup
+  - red_cup #case, round case
+  - can #white_block 
+  - box #black box #, black block###
+  - red_box # treat box, box, block###

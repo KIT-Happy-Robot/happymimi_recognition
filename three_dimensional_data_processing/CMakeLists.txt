@@ -127,6 +127,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
+include_directories(/usr/local/include ${catkin_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+include_directories(include ${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -157,7 +159,9 @@ add_executable(position_estimator src/position_estimator.cpp)
 target_link_libraries(
   position_estimator
   ${catkin_LIBRARIES}
-  ${OpenCV_INCLUDE_DIRS}
+  /usr/lib /usr/local/lib
+  ${OpenCV_LIBRARIES}
+  ${OpenCV_LIBS}
 )
 
 #############

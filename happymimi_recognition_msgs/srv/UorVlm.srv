@@ -1,0 +1,10 @@
+string task # ==None (Ex. clasification[class_list prompt], detection[object], description[object], NTP[...]
+string prompt
+string class_list_name
+string object  # ==None (Ex. obj, person, env)
+string area  # ==None (Ex. center, right, left, all,,,)
+string camera_name # =="head"
+
+sensor_msgs/Image image # None
+---
+string result

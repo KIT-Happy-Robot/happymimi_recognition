@@ -1,0 +1,20 @@
+device: gpu
+  # cpu, gpu
+yolo:
+  model: yolov8l-world.pt # weight
+  # yolov8s-world.pt yolov8s-seg.pt
+  input_topic: "/camera/color/image_row"
+  conf_thres: 0.1
+clip:
+  model: alesforce/blip-image-captioning-base 
+  # ViT-B/32 :clip
+  # openai/clip-vit-large-patch14 :CLIPModel
+  # openai/clip-vit-base-patch32
+  captioner: ""
+  processor: openai/clip-vit-large-patch14
+  # openai/clip-vit-large-patch14 :CLIPModel
+  # openai/clip-vit-base-patch32
+blip:
+  model: ""
+gemini:
+  model: "gemini-pro-vision" # 'gemini-pro','gemini-pro-vision'

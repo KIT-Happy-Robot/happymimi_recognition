@@ -1,0 +1,12 @@
+string[] classes # 1 class
+string option # =="all" ("nearest",,,
+string camera_name # =="head" (None, "arm",,,
+bool depth_musk
+---
+int32[] id
+string[] name
+int32[] center_x
+int32[] center_y
+int32[] size_x
+int32[] size_y
+#geometry_msgs/Point[] point

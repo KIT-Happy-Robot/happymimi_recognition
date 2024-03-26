@@ -5,6 +5,7 @@ import cv2
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
 import rospy
+import rosparam
 import numpy as np
 from happymimi_recognition_msgs.srv import depth_meter,depth_meterResponse
 
@@ -20,7 +21,7 @@ class ImageMask():
     def __init__(self):
         rospy.init_node('depsMaskImage',anonymous=True)
         self.bridge = CvBridge()
-        self.meter = 2.5
+        self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
         #Realsenseのカラー画像と深度情報取得
         rospy.Subscriber('/camera/color/image_raw',Image,self.img_listener)
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)

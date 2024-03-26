@@ -13,7 +13,14 @@ class CoordinatePaperBag():
     def __init__(self):
         rospy.init_node('Coordinate_PaperBag_node',anonymous=True)
         self.bridge = CvBridge()
+<<<<<<< HEAD
         self.model = YOLO("/home/mimi/external_ws/src/ros1_yolov8/paper_bag.pt")  
+=======
+        self.model = YOLO("/home/mimi/external_ws/src/ros1_yolov8/paper_bag.pt")
+        #self.model = YOLO("yolov8n.pt")
+        #rospy.Subscriber('/yolo_image',Image,self.img_listener)  
+        #self.model = YOLO("/home/ayu/catkin_ws/src/ros1_yolov8/src/paper_bag.pt")  
+>>>>>>> cf86dcfb9102d08e2172a93c5219f1298d844247
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)
         rospy.Subscriber('/camera/color/image_raw',Image,self.img_listener)
         srv = rospy.Service('Coordinate_PaperBag_srv',LeftRight2xyz,self.Coordinate_srv)
@@ -45,10 +52,14 @@ class CoordinatePaperBag():
 
     def coordinate_Paperbag(self):
         self.clear_val()
+<<<<<<< HEAD
 
         #results = self.model(source=self.img,conf=0.6)
         results = self.model(source=self.img,conf=0.7)
 
+=======
+        results = self.model(source=self.img,conf=0.6)
+>>>>>>> cf86dcfb9102d08e2172a93c5219f1298d844247
         boxes = results[0].boxes
         for box in boxes:
             x,y,w,h = [int(i) for i in box.xywh[0]]

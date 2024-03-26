@@ -22,6 +22,9 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>happymimi_recognition_msgs</build_depend>
 
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>cv_bridge</build_export_depend>
@@ -41,6 +44,9 @@
   <exec_depend>actionlib_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>happymimi_recognition_msgs</exec_depend>
+
+  <exec_depend>pcl_conversions</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
 
   <export>
 
