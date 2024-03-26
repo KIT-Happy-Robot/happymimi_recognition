@@ -21,12 +21,22 @@ tidyup_raw:
   - light bulb box # black box, black block###
   - block box # treat box, box, block###
 tidyup_fix:
-  - white_cup
-  - green_long_box # green block
+  - cup #white_cup
+  - green_box #green_long_box # green block
   - orange_cup
   - yellow_bottle
-  - blue_cup
+  - bottle # blue_cup
   - red_cup #case, round case
-  - white_block #
-  - black box #, black block###
+  - block #white_block #
+  - box #black box #, black block###
+  - red_box # treat box, box, block###
+yumeko_tu:
+  - cup #noodle
+  - green_box #green_long_box # green block
+  - orange_cup
+  - yellow_bottle ### color bottle
+  - bottle # blue_cup
+  - red_cup #case, round case
+  - can #white_block 
+  - box #black box #, black block###
   - red_box # treat box, box, block###

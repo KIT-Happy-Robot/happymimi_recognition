@@ -6,6 +6,7 @@
 import os
 import yaml
 import json
+import cv2
 from pathlib import Path
 from PIL import Image
 api_key_in = os.environ.get("OPEN_AI_KEY", "default")
@@ -78,6 +79,16 @@ def encodeImage(image_path):
 #image_path = "path_to_your_image.jpg"
 # Getting the base64 string
 base64_image = encodeImage(img_file)
+
+def saveBase64(cv_image):
+    try:
+        base64_image = base64.b64encode(cv2.imencode('.jpg', cv_image)[1]).decode()
+        with open('gpt_base64.jpg', 'wb') as f:
+            f.write(base64.b64decode(base64_image))
+        cv2.imwrite('gpt_image.jpg', cv_image)
+        rospy.loginfo("Images saved successfully!")
+    except Exception as e:
+        rospy.logerr("Error processing the image: %s", str(e))
 
 def serviceCB(req):
     SrvRes = UorVlmResponse()

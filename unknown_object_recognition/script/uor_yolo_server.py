@@ -3,20 +3,19 @@
 # Desc:
 
 import sys
+import yaml
 import time
 import rospy
 from sensor_msgs.msg import Image
+from vision_msgs.msg import Detection2D, Detection2DArray, ObjectHypothesisWithPose
 from cv_bridge import CvBridge
 from ultralytics_ros import YoloResult
 from happymimi_msgs.srv import StrTrg # for Finding
 from happymimi_recognition_msgs import UorYolo, UorYoloResponse
-import roslib
-base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
-sys.path.insert(0, base_path)
-import prompt_module
-from image_module import ImageModule
-import numpy as np
-
+from pathlib import Path
+# import roslib
+# base_path = roslib.packages.get_pkg_dir('unknown_object_recognition') + '/script/'
+# sys.path.insert(0, base_path)
 
 # IN: Sub(Yolo-world Results /uor/yolo_result) | OUT: Server (detecttion and localizeation, finding)
 class UnknownObjectYoloServer():
@@ -27,16 +26,23 @@ class UnknownObjectYoloServer():
         rospy.Subscriber("/uor/yolo_result", YoloResult, self.yoloCB)
         self.image_sc = rospy.ServiceProxy("/image_server", Image)
         # IN: classes | OUT: bbox(Pose2D center[x,y,theta], size_x 0.0, size_y 0.0)
-        self.yolo_ss = rospy.Service("/uor/yolo_server", UorYolo, self.serviceCB)
-        self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
+        self.yolo_ss = rospy.Service("/uor/yolow_server", UorYolo, self.serviceCB)
+        #self.find_ss = rospy.Service("/uor/yolo_server/finding", StrTrg, self.findServiceCB)# cla
         # 物体分類サーバー　IN: classes[], camera_name, area | OUT: class_name, item_category
         #self.clasify_ss = rospy.Service("/uor/yolo_server/clasifition", UorYolo, self.clasifyCB)
         # 物体検出、検知サーバー IN: Classes| OUT: results["obj":[xyz], conf,,,]
-        self.detecttions_ss = self.rospy.Service("/uor/yolo_server/detections", UorYolo, self.detectService)
-        self.IM = ImageModule()
-        self.IM.rosInit(head_depth=True)
+        #self.detecttions_ss = self.rospy.Service("/uor/yolo_server/detections", UorYolo, self.detectService)
+
+        self.model_config = rospy.get_param('/uor/model_config', {})
+        self.model_name = self.model_config["yolo"]["model"]
+        self.conf_thres = self.model_config["yolo"]["conf_thres"]
+        self.device = self.model_config["device"]
+        pkg_dir = Path(__file__).parent.resolve().parent
+        self.uor_model_config = rospy.get_param("/uor/object_class_list")
+        with open(pkg_dir/"config/object_class_list.yaml", 'r') as file:
+            self.object_class_list = yaml.safe_load(file)
         rospy.loginfo("UnknownObjectYoloServer: Im Ready to response...")
-        
+
     # subs
     def yoloCB(self, bb):
         self.update_time = time.time()
@@ -93,8 +99,9 @@ class UnknownObjectYoloServer():
     def getPredictResults(self, classes, image):
         self.model.set_classes(classes)
         results = self.model.predict(image, 
-                                     device=self.device,
-                                     save=True)
+                                    device=self.device,
+                                    conf=self.conf_thres,
+                                    save=True)
         # Show results
         results[0].show()
         output_img = results[0].plot()
@@ -102,17 +109,79 @@ class UnknownObjectYoloServer():
         #return output_img
         #results_lists = self.getResultList(results)
         return results
+    
+    def createDetectionsArray(self, results):
+        detections_msg = Detection2DArray()
+        bbox_list = []
+        bbox_data = {}
+        self.ids = []
+        self.names = []
+        self.center_xs =[]
+        self.center_ys =[]
+        self.size_xs = []
+        self.size_ys = []
+        self.points = []
+        bounding_box = results[0].boxes.xywh
+        classes = results[0].boxes.cls
+        names = results[0].names
+        confidence_score = results[0].boxes.conf
+        for bbox, cls, name, conf in zip(bounding_box, classes, names, confidence_score):
+            detection = Detection2D()
+            detection.bbox.center.x = float(bbox[0])
+            detection.bbox.center.y = float(bbox[1])
+            detection.bbox.size_x = float(bbox[2])
+            detection.bbox.size_y = float(bbox[3])
+            hypothesis = ObjectHypothesisWithPose()
+            hypothesis.id = int(cls)
+            hypothesis.score = float(conf)
+            detection.results.append(hypothesis)
+            detections_msg.detections.append(detection)
+            self.points.append([int(bbox[0]), int(bbox[1])])
+            bbox_dict = {'id': int(cls), 'name': str(name), 
+                        'center': [bbox[0], bbox[1]], 'size': [bbox[2], bbox[3]]}
+            bbox_list.append(bbox_dict)
+            self.ids.append(int(cls)); 
+            self.names.append(str(names))
+            self.center_xs.append([bbox[0]])
+            self.center_ys.append([bbox[1]])
+            self.size_xs.append([bbox[2]])
+            self.size_xs.append([bbox[3]])
 
+        return detections_msg, bbox_list
+    
+    def setModelClasses(self, classes): self.model.set_classes(classes)
     # service ------------------------------
-    def serviceCB(self, yolo_msg):
-        yolo_result = self.getPredictResults(msg)
+    def serviceCB(self, req):
+        UY = UorYoloResponse()
+        if req.camera_name == "head" or req.camera_name == None:
+            image = self.image_sc("head") #cv_img = IM.getHeadCvImage()
+        if req.camera_name == "arm":
+            image = self.image_sc("arm") #cv_img = IM.getArmCvImage()
+        if req.camera_name == "usbcam":
+            image = self.image_sc("usbcam") # cv_img = IM.getUsbCvImage()
+        #UY = UorYoloResponse()
+        cv_image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
+        if req.classes:
+            if req.classes:
+                if req.classes[0] == "tidyup_fix": self.setModelClasses(self.object_class_list["tidyup_fix"])
+                elif req.classes[0] == "yumeko_tu": self.setModelClasses(self.object_class_list["yumeko_tu"])
+                else: self.setModelClasses(req.classes)
+        else: self.setModelClasses(self.object_class_list["default"])
+        results = self.model.predict(source=cv_image,
+                                    conf=self.conf_thres,
+                                    save=True)
+        detect_msg, bbox_list = self.createDetectionsArray(results)
+        for data in bbox_list:
+            UY.id.append(data)['id']
+            UY.name.append(data['name'])
+            UY.center_x.append(data["center"][0])
+            UY.center_y.append(data["center"][1])
+            UY.size_x.append(data['size'][0])
+            UY.size_y.append(data['size'][1])
+        return True
         
-    def getFindingResult(self, results): ###
+    def getFinding(self, name): ###
         pass
-    def findServiceCB(self, req):
-        result = StrTrg()
-        
-        return result
 
     # IN: Classes| OUT: results["class_name":[xyz], conf,,,]
     def detectServiceCB(self, req): pass

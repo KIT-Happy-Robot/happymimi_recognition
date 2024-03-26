@@ -22,6 +22,13 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
 )
 
+find_package(PCL COMPONENTS
+  common
+  visualization
+  io 
+  REQUIRED
+)
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -45,7 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES unknown_object_recognition
-#  CATKIN_DEPENDS actionlib cv_bridge geometry_msgs happymimi_recognition_msgs image_transport rcl_ros roscpp rospy std_msgs vision_msgs
+  CATKIN_DEPENDS actionlib cv_bridge geometry_msgs happymimi_recognition_msgs image_transport pcl_ros roscpp rospy std_msgs vision_msgs pcl_conversions pcl_ros
 #  DEPENDS system_lib
 )
 
@@ -55,9 +62,14 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
+
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
@@ -71,6 +83,7 @@ include_directories(
 
 add_executable(downsampling src/downsampling.cpp)
 add_executable(planar_segmentation src/planar_segmentation.cpp)
+#add_executable(pcp src/point_cloud_processor.cpp)
 
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
@@ -78,6 +91,7 @@ add_executable(planar_segmentation src/planar_segmentation.cpp)
 # )
 target_link_libraries(downsampling ${catkin_LIBRARIES})
 target_link_libraries(planar_segmentation ${catkin_LIBRARIES})
+#target_link_libraries(pcp ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 
 #############
 ## Install ##
@@ -91,8 +105,9 @@ catkin_install_python(PROGRAMS
   script/prompt_module.py
   script/clip_module.py
   script/table_object_server.py
-  script/uor_yolo_server.py
+  script/yolow_server.py
   script/uor_gpt_server.py
+  script/uor_gemini_server.py
   script/uor_clip_server.py
   script/uor_yolo_server.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

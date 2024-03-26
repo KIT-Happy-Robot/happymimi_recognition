@@ -1,9 +1,10 @@
 device: gpu
   # cpu, gpu
 yolo:
-  model: yolov8s-world.pt # weight
+  model: yolov8l-world.pt # weight
   # yolov8s-world.pt yolov8s-seg.pt
   input_topic: "/camera/color/image_row"
+  conf_thres: 0.1
 clip:
   model: alesforce/blip-image-captioning-base 
   # ViT-B/32 :clip
