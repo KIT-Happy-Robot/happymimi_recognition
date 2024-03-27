@@ -5,15 +5,15 @@ import cv2
 import rospy
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
-from ultralytics import YOLO
-from geometry_msgs.msg import Point
+from ultralytics import YOLOWorld
 from happymimi_recognition_msgs.srv import LeftRight2xyz,LeftRight2xyzResponse
 
 class DetectPaperBag():
     def __init__(self):
         rospy.init_node('DetectPaperBag',anonymous=True)
         self.bridge = CvBridge()
-        self.model = YOLO("/home/ayu/catkin_ws/src/ros1_yolov8/src/paper_bag.pt")  
+        self.model = YOLOWorld("yolov8l-world.pt")
+        self.model.set_classes(["paper bag"])  
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)
         rospy.Subscriber('/camera/color/image_raw',Image,self.img_listener)
         srv = rospy.Service('Coordinate_PaperBag',LeftRight2xyz,self.Coordinate_srv)
@@ -45,11 +45,8 @@ class DetectPaperBag():
 
     def Coordinate_Paperbag(self):
         self.clear_val()
-<<<<<<< HEAD
+
         results = self.model(source=self.img,conf=0.6)
-=======
-        results = self.modelre(source=self.img,conf=0.7)
->>>>>>> 4277ae76507249a290c1428ff5d8ab2f184c0607
         boxes = results[0].boxes
         for box in boxes:
             x,y,w,h = [int(i) for i in box.xywh[0]]
