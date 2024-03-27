@@ -7,6 +7,7 @@ import cv2
 import rospy
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
+from happymimi_msgs.srv import SetStr,StrToStrResponse
 from std_msgs.msg import String
 import mediapipe as mp
 import math
@@ -20,9 +21,26 @@ class Directon_finder():
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         self.pub =rospy.Publisher("direction_of_hands",String,queue_size=10)
+        self.srv = rospy.Service("direction_of_hands",SetStr,self.direction_of_hands)
         self.bridge = CvBridge()
         rospy.Subscriber('camera/color/image_raw',Image,self.img_listener)
         self.r = rospy.Rate(2)
+
+        self.detect_frame = [] # LeftRightの２つの文字が格納されている。
+        self.detectStartBool = False
+    def direction_of_hands(self,req):
+        self.detectStartBool = True
+        if len(self.detect_frame) > 50:
+            left_count = self.detect_frame.count("Left")
+            right_count = self.detect_frame.count("Right")
+
+            if left_count > right_count:
+                self.detectStartBool = False
+                return StrToStrResponse("Left")
+            else:
+                self.detectStartBool = False
+                return StrToStrResponse("Right")
+
 
     def img_listener(self,img):
         self.img = self.bridge.imgmsg_to_cv2(img,"bgr8")
@@ -71,17 +89,28 @@ class Directon_finder():
                 rospy.loginfo(resultsText)
                 self.pub.publish(resultsText)
 
-
             if angle2 > 30:
                 print(f"角度: {angle2:.2f}度 (30度を超えました) 左手")
                 resultsText = "Left"
                 rospy.loginfo(resultsText)
                 self.pub.publish(resultsText)
+                if self.detectStartBool == True:
+                    self.detect_frame.append(resultsText)
+                else:
+                    self.detect_frame = []
+                    
+
+
             else:
                 resultsText = "None"
                 rospy.loginfo(resultsText)
                 self.pub.publish(resultsText)
-            
+                if self.detectStartBool == True:
+                    self.detect_frame.append(resultsText)
+                else:
+                    self.detect_frame = []
+
+
 
         
 
