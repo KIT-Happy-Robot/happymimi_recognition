@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   cv_bridge
   happymimi_recognition_msgs
+  happymimi_msgs
   #add pcl
   pcl_conversions pcl_ros
 )
