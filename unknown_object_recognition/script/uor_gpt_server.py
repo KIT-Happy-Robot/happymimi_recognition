@@ -8,7 +8,7 @@ import yaml
 import json
 import cv2
 from pathlib import Path
-from PIL import Image
+import PIL
 api_key_in = os.environ.get("OPEN_AI_KEY", "default")
 from openai import OpenAI
 # openai.api_key=
@@ -17,27 +17,34 @@ import base64
 import requests
 
 import sys
-parent_path = Path(__file__).parent.resolve()
-sys.path.insert(0, parent_path)
+import roslib
+#parent_dir = Path(__file__).parent.resolve()
+#parent_dir = roslib.packages.get_dir_pkg("unknown_object_recognition")+"/script/"
+parent_dir, _ = roslib.packages.get_dir_pkg("unknown_object_recognition")
+script_dir = os.path.join(parent_dir,"script")
+sys.path.insert(0, script_dir)
 from image_module import ImageModule
 from prompt_module import PromptModule
 import rospy
-from happymimi_recognition_msgs.srv import UorVlm, UorVlmResponse
+from sensor_msgs.msg import Image
+from happymimi_recognition_msgs.srv import UorVlm, UorVlmResponse, CameraImage
 
 # テスト画像ファイルの準備
-img_dir = parent_path.parent/"image"
-img_file = img_dir/"pcp_2.png"
+#img_dir = parent_dir/"image"
+#img_file = img_dir/"pcp_2.png"
+img_dir = os.path.join(parent_dir, "image")
+img_file = os.path.join(img_dir, "pcp_2.png")
 for filename in os.listdir(img_dir):
     if filename.endswith('.png'):  # 画像ファイルの拡張子を指定
         image_path = os.path.join(img_dir, filename)
-        image = Image.open(image_path) # 画像を読み込み
+        image = PIL.Image.open(image_path) # 画像を読み込み
 
 class UnknownObjectGptServer():
     def __init__(self):
         rospy.loginfo("Initialing Node: uor_gpt_server")
         rospy.init_node('uor_gpt_server')
         rospy.Service("/uor/gpt_server", UorVlm, self.serviceCB)
-        self.image_sc = rospy.ServiceProxy("/recognition/image_saver", Image)
+        self.image_sc = rospy.ServiceProxy("/recognition/image_saver", CameraImage)
         rospy.loginfo("Initialized Node: uor_gpt_server")
         self.IM = ImageModule()
         #image_path = "path_to_your_image.jpg"

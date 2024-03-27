@@ -192,11 +192,11 @@ class UnknownObjectYoloServer():
         for data in bbox_list:
             UY.id.append(data['id'])
             UY.name.append(data['name'])
-            UY.center_x.append(data["center"][0])
-            UY.center_y.append(data["center"][1])
-            UY.size_x.append(data['size'][0])
-            UY.size_y.append(data['size'][1])
-        return True
+            UY.center_x.append(int(data["center"][0]))
+            UY.center_y.append(int(data["center"][1]))
+            UY.size_x.append(int(data['size'][0]))
+            UY.size_y.append(int(data['size'][1]))
+        return UY
         
     def test(self, _):
         #image = self.bridge.imgmsg_to_cv2(image, desired_encoding="bgr8")
