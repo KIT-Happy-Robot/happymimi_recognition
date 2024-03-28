@@ -23,7 +23,7 @@ def mask_person(img):
     mask1AND = cv2.bitwise_and(img,mask1)
     mask2AND = cv2.bitwise_and(img,mask2)
 
-    return mask1,mask2
+    return mask1AND,mask2AND
 
     """
     cv2.imshow("img",mask1AND)
