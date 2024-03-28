@@ -1,6 +1,5 @@
 item:
-  - paperbag
-  - handle of paper bag 
+  - man_wearing_black_clothes
  
 model:
   - yolov8m-world.pt
