@@ -21,12 +21,14 @@ class ImageMask():
     def __init__(self):
         rospy.init_node('depsMaskImage',anonymous=True)
         self.bridge = CvBridge()
-        self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
+        self.meter = 2.5
+        #self.meter = rosparam.get_param('/camera/realsense2_camera/max_depth_limit')
         #Realsenseのカラー画像と深度情報取得
         rospy.Subscriber('/camera/color/image_raw',Image,self.img_listener)
         rospy.Subscriber('/camera/aligned_depth_to_color/image_raw',Image,self.depth_listener)
         self.pub = rospy.Publisher('camera/color/depth_mask',Image,queue_size=10)
         self.server = rospy.Service("depth_mask",depth_meter,self.depth_reception)
+        rospy.loginfo("set depth mask")
         
     def depth_reception(self,request):
         self.meter = float(str(request).split(":")[1])
@@ -36,8 +38,8 @@ class ImageMask():
     def img_listener(self,data):
         try:
             color_data = self.bridge.imgmsg_to_cv2(data,"bgr8")
-            self.img = np.copy(color_data)
-            self.img = cv2.resize(self.img,(WIDTH,HEIGHT))
+            image = np.copy(color_data)
+            self.img = cv2.resize(image,(WIDTH,HEIGHT))
         except CvBridgeError as e:
             print("img_listener:",e)
 
@@ -62,7 +64,7 @@ class ImageMask():
             mask2 = np.zeros((self.img.shape[0],self.img.shape[1],3), np.uint8)
 
             mask1[self.depth < self.meter] = (255,255,255)   #meter[m]より近い点を白
-            mask2[self.depth >= 0.5] = (255,255,255)    #0.5[m]以上の距離は白
+            mask2[self.depth >= 0.3] = (255,255,255)    #0.5[m]以上の距離は白
             mask = cv2.bitwise_and(mask1,mask2)     #meter > self.depth >= 0.5の距離を白
             mask = cv2.medianBlur(mask,ksize)    #中央値フィルタによる小さいノイズ処理
             img_AND = cv2.bitwise_and(self.img,mask)    #カラー画像のマスク

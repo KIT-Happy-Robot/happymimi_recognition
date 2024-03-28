@@ -33,5 +33,9 @@ def mask_person(img):
     """
 
 if __name__ == "__main__":
-    image = cv2.imread("up_hand1.jpeg")
-    mask_person(image)
+    image = cv2.imread("IMG_4883.jpg")
+    frame1,frame2 = mask_person(image)
+    cv2.imshow("frame1",frame1)
+    cv2.imshow("frame2",frame2)
+    cv2.waitKey(0)
+    
