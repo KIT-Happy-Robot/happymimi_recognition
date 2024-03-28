@@ -2,4 +2,6 @@
 <launch>
   <rosparam file="$(find recognition_processing)/param/object_dict.yaml" command="load" ns="object_dict"/>
   <node pkg="recognition_processing" name="recognition_action_server" type="recognition_action_server_v8.py" output="screen" />
+  <node pkg="recognition_processing" name="raise_your_hands" type="raise_your_hands.py" output="screen" />
+  <node pkg="recognition_processing" name="raise_your_hands_two_people" type="raise_your_hands_twoPerson.py" output="screen" />
 </launch>
