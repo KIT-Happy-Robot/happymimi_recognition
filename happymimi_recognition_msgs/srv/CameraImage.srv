@@ -1,0 +1,4 @@
+string camera_name
+bool depth_musk
+---
+sensor_msgs/Image image

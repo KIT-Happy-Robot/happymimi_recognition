@@ -7,6 +7,7 @@ import cv2
 import rospy
 from cv_bridge import CvBridge,CvBridgeError
 from sensor_msgs.msg import Image
+from happymimi_msgs.srv import SetStr,SetStrResponse
 from std_msgs.msg import String
 import mediapipe as mp
 import math
@@ -20,17 +21,38 @@ class Directon_finder():
         self.mp_pose = mp.solutions.pose
         self.pose = self.mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         self.pub =rospy.Publisher("direction_of_hands",String,queue_size=10)
+        self.srv = rospy.Service("direction_of_hands_srv", SetStr, self.direction_of_hands)
         self.bridge = CvBridge()
         rospy.Subscriber('camera/color/image_raw',Image,self.img_listener)
         self.r = rospy.Rate(2)
+        self.detect_frame = [] # LeftRightの２つの文字が格納されている。
+        self.detectStartBool = False
+    def direction_of_hands(self,req):
+        self.detectStartBool = True
+        print(len(self.detect_frame))
+        while len(self.detect_frame) <   20:
+            print("計測中",len(self.detect_frame))
+        if len(self.detect_frame) > 15:
+            left_count = self.detect_frame.count("Left")
+            right_count = self.detect_frame.count("Right")
+            print("left:" ,left_count, "right:" ,right_count)
+
+            if left_count > right_count:
+                self.detectStartBool = False
+                lr = "Left"
+            else:
+                self.detectStartBool = False
+                lr = "Right"
+            return lr
+
 
     def img_listener(self,img):
         self.img = self.bridge.imgmsg_to_cv2(img,"bgr8")
         results = self.pose.process(self.img)
         resultsText = ""
+        #print("Daniil")
         if results.pose_landmarks:
             landmarks = results.pose_landmarks.landmark
-
             # 直線aの計算 (ID 12と24の座標から) 右手の肩と右胴体
             a_x1 = landmarks[12].x
             a_y1 = landmarks[12].y
@@ -70,18 +92,31 @@ class Directon_finder():
                 resultsText = "Right"
                 rospy.loginfo(resultsText)
                 self.pub.publish(resultsText)
-
+                if self.detectStartBool == True:
+                    self.detect_frame.append(resultsText)
+                else:
+                    self.detect_frame = []
 
             if angle2 > 30:
                 print(f"角度: {angle2:.2f}度 (30度を超えました) 左手")
                 resultsText = "Left"
                 rospy.loginfo(resultsText)
                 self.pub.publish(resultsText)
+                if self.detectStartBool == True:
+                    self.detect_frame.append(resultsText)
+                else:
+                    self.detect_frame = []
+                    
+
+
             else:
-                resultsText = "None"
-                rospy.loginfo(resultsText)
-                self.pub.publish(resultsText)
-            
+                self.pub.publish("None")
+                if self.detectStartBool == True:
+                    rospy.loginfo("nai")
+                else:
+                    self.detect_frame = []
+
+
 
         
 

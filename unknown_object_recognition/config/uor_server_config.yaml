@@ -1,0 +1,9 @@
+item:
+  - paperbag
+  - handle of paper bag 
+ 
+model:
+  - yolov8m-world.pt
+
+confidence:
+  - 0.1

@@ -1,0 +1,35 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/mimi/main_ws/devel/include/**",
+        "/home/mimi/external_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/mimi/external_ws/src/darknet_ros/darknet_ros/include/**",
+        "/home/mimi/external_ws/src/DynamixelSDK/ros/dynamixel_sdk/include/**",
+        "/home/mimi/external_ws/src/dynamixel-workbench/dynamixel_workbench_controllers/include/**",
+        "/home/mimi/external_ws/src/dynamixel-workbench/dynamixel_workbench_operators/include/**",
+        "/home/mimi/external_ws/src/dynamixel-workbench/dynamixel_workbench_toolbox/include/**",
+        "/home/mimi/main_ws/src/rcj_2022_master/find_my_mates2022/include/**",
+        "/home/mimi/main_ws/src/happymimi_apps/happymimi_navigation/include/**",
+        "/home/mimi/external_ws/src/IntelRealSense_OpenFace_ROS/include/**",
+        "/home/mimi/external_ws/src/realsense-ros/realsense2_camera/include/**",
+        "/home/mimi/external_ws/src/ros_openpose/include/**",
+        "/home/mimi/external_ws/src/rosserial/rosserial_server/include/**",
+        "/home/mimi/external_ws/src/rosserial/rosserial_test/include/**",
+        "/home/mimi/external_ws/src/ultralytics_ros/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

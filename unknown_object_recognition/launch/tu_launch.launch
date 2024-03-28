@@ -1,0 +1,20 @@
+<launch>
+    <arg name="pkg" default="$(find unknown_object_recognition)"/>
+    <!-- パラメータYAMLファイルを読み込む -->
+    <rosparam ns="/uor/model_config" command="load" file="$(arg pkg)/config/uor_model.yaml" />
+    <rosparam ns="/uor/object_class_list" command="load" file="$(arg pkg)/config/object_class_list.yaml" />
+    <rosparam ns="/uor/item_category" command="load" file="$(arg pkg)/config/item_category.yaml" allow_none="true"/>
+    <!-- <rosparam ns="/uor/prompt_tmp" command="load" file="$(arg pkg)/config/prompt_temp.yaml" /> -->
+
+    <!-- ノードを起動する -->
+    <!--<node name="yolo_server" pkg="unknown_object_recognition" type="yolow_server.py" output="screen"> </node>-->
+    <node name="uor_yolo_server" pkg="unknown_object_recognition" type="uor_yolo_server.py" output="screen"> </node>
+    
+    <!--<node name="image_server" pkg="unknown_object_recognition" type="image_server.py" output="screen"> </node>-->
+    <node name="image_module" pkg="unknown_object_recognition" type="image_module.py" output="screen"> </node>
+    
+    <node name="uor_gpt_server" pkg="unknown_object_recognition" type="uor_gpt_server.py" output="screen"> </node>
+    <node name="uor_gemini_server" pkg="unknown_object_recognition" type="uor_gemini_server.py" output="screen"> </node>
+    <!--<node name="table_object_server" pkg="unknown_object_recognition" type="table_object_server.py" output="screen"> </node>-->
+    <!--<node name="point_cloud_processor" pkg="unknown_object_recognition" type="point_cloud_processor.cpp" output="screen">-->
+</launch>

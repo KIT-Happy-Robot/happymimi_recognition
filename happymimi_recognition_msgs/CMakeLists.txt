@@ -5,6 +5,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
+  vision_msgs
   geometry_msgs
   actionlib_msgs
   happymimi_msgs
@@ -29,9 +31,13 @@ add_service_files(
   PositionEstimator.srv
   depth_meter.srv
   LeftRight2xyz.srv
-
   Clip.srv
   ITT.srv
+  CameraImage.srv
+  UorToGrasp.srv
+  UorYolo.srv
+  UorVlm.srv
+  PositionEstimatorPCL.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -45,7 +51,9 @@ add_action_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
   geometry_msgs
+  vision_msgs
   actionlib_msgs
   happymimi_msgs
 )

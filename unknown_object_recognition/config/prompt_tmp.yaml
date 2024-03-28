@@ -1,0 +1,26 @@
+class:
+  - 'a photo of a {class}.'
+color_class:
+  - 'a {color} photo of a {class}.'
+adjective_photo_class:
+  - 'a {adjective} photo of a {class}.'
+adjective_class:
+  - 'a photo of a {adjective} {class}.'
+
+clasification:
+detection:
+prediction:
+
+# For GPT
+receptionist:
+  - "目の前にある{chair_num}個の椅子で、人が座っている椅子は"
+  - ""
+  - "座っている人の右側にある椅子の個数"
+  - "How many chairs are there to the right of the person sitting?"
+  - "What chair is sitting on person, from left of this photo"
+
+limit_sentence:
+  - "\nひと言で出力すること。"
+  - "\nOutput in just one word."
+  - ""
+  - "Don't output anything other than {data_type} data"
