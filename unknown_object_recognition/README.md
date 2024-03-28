@@ -3,6 +3,12 @@
 RCJ2024の見極めまでに時間がなくて、ここ4日で1人ですべてモジュールを作っていたのでコミット文をちゃんと書いてません。
 ご了承ください。
 
+# example
+## Yolow Results
+![Yolow Results Image 1](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/dspt_tu_2.jpg)
+![Yolow Results Image 2](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/up_real_tu_1.jpg)
+
+
 # Overview
 - src
   cppファイルの格納庫
@@ -55,10 +61,14 @@ pip3 install requests pillow transformers
 ```
 
 # Usage
+RSカメラ類を起動する
+imase_serverノードを起動する
+https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/script/image_server.py
+メッセージ型をインポーと
+from happymimi_recognition_msgs.srv import UorYolo
+"/uor/yolow_server", UorYoloのサービスクライアントを宣言する
+リクエストする例（カメラ名："arm"、"head"、arm、usbcam・クラス名またはクラスのリストまたは競技用のクラスリスト名[unknown_object_recognition/config/object_class_list.yaml]）
+self.yolow_sc(camera_name="head", classes=["cup", "person", "bottle", "paper_bug", "black_box"])
+self.yolow_sc(camera_name="arm", classes=["tidyup_fix"])
 
-# ROS Usage
 
-# example
-## Yolow Results
-![Yolow Results Image 1](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/dspt_tu_2.jpg)
-![Yolow Results Image 2](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/up_real_tu_1.jpg)
