@@ -188,6 +188,7 @@ class UnknownObjectYoloServer():
         results = self.model.predict(source=cv_image,
                                     conf=self.conf_thres,
                                     save=True)
+        print(results)
         detect_msg, bbox_list = self.createDetectionsArray(results)
         for data in bbox_list:
             UY.id.append(data['id'])
@@ -196,6 +197,7 @@ class UnknownObjectYoloServer():
             UY.center_y.append(int(data["center"][1]))
             UY.size_x.append(int(data['size'][0]))
             UY.size_y.append(int(data['size'][1]))
+        print(UY)
         return UY
         
     def test(self, _):

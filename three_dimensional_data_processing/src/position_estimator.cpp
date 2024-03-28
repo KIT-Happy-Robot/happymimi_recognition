@@ -77,18 +77,26 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   geometry_msgs::Point object_point;
   cv::Mat cv_image;
   sensor_msgs::ImageConstPtr current_depth_image = depth_image;
-
+  ROS_INFO("center_x: %ld", req.center_x);
+  ROS_INFO("center_y: %ld", req.center_y);
   bool convert_result = convertImage(current_depth_image, cv_image);
-
+  ROS_INFO("convert bool result:　%s", convert_result ? "true" : "false");
   if(!convert_result){
 	res.point.x = std::numeric_limits<float>::quiet_NaN();
 	res.point.y = std::numeric_limits<float>::quiet_NaN();
 	res.point.z = std::numeric_limits<float>::quiet_NaN();
 	return false;
   }
-
+  // リクエストされたピクセル位置が深度画像の範囲外にある場合の処理
+  if (req.center_x < 0 || req.center_x >= current_depth_image->width || req.center_y < 0 || req.center_y >= current_depth_image->height) {
+    ROS_WARN("Requested pixel position is out of depth image bounds.");
+    res.point.x = std::numeric_limits<float>::quiet_NaN();
+    res.point.y = std::numeric_limits<float>::quiet_NaN();
+    res.point.z = std::numeric_limits<float>::quiet_NaN();
+    return false;
+  }
   float distance = cv_image.at<u_int16_t>(req.center_x, req.center_y);
-  ROS_INFO("distance: %f", distance);
+  ROS_INFO("Distance at requested pixel position: %f", distance);
 
   float theta_y, theta_z, centroid_x, centroid_y, centroid_z;
 
@@ -118,7 +126,7 @@ bool ThreeDimensionalPositionEstimator::getDepth(happymimi_recognition_msgs::Pos
   res.point.x = centroid_x / 1000;
   res.point.y = centroid_y / 1000;
   res.point.z = centroid_z / 1000 + realsense_height;
-  res.point.z += 0.05;
+  //res.point.z += 0.05;
   ROS_INFO("x:%f, y:%f, z:%f", res.point.x, res.point.y, res.point.z);
 
   return true;

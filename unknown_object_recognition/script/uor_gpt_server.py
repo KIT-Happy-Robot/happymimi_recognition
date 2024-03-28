@@ -105,11 +105,11 @@ class UnknownObjectGptServer():
         SrvRes = UorVlmResponse()
         #ros_img = IM.converRosJpg(req.image)
         if req.camera_name == "head":
-            cv_img = self.image_sc() #IM.getHeadCvImage()
+            cv_img = self.image_sc().image #IM.getHeadCvImage()
         if req.camera_name == "arm":
-            cv_img = self.image_sc() #IM.getArmCvImage()
+            cv_img = self.image_sc().image #IM.getArmCvImage()
         if req.camera_name == "usbcam":
-            cv_img = IM.getUsbCvImage()
+            cv_img =IM.getUsbCvImage().image
         else: cv_img = IM.autoConvert(cv_img, "cv")
         #base_img = IM.convertCvBase64(cv_img) ###
         image_path = self.IM.saveCvJpeg(cv_img)

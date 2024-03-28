@@ -159,6 +159,7 @@ add_executable(position_estimator src/position_estimator.cpp)
 target_link_libraries(
   position_estimator
   ${catkin_LIBRARIES}
+  ${OpenCV_INCLUDE_DIR}
   /usr/lib /usr/local/lib
   ${OpenCV_LIBRARIES}
   ${OpenCV_LIBS}

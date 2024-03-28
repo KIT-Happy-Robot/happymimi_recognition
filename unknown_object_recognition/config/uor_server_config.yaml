@@ -1,6 +1,5 @@
 item:
-  - paperbag
-  - handle of paper bag 
+  - man wearing white clothes
  
 model:
   - yolov8m-world.pt

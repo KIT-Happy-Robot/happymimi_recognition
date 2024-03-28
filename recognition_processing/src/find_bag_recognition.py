@@ -81,12 +81,13 @@ class CoordinatePaperBag():
 
     def Coordinate_srv(self,LeftRight):
         self.coordinate_Paperbag()
-        #print(LeftRight)
-        if LeftRight == "left":
+        lr = LeftRight.leftright
+        if lr == "Right":
             return LeftRight2xyzResponse(self.put_x1[0],self.put_y[0],self.put_depth[0])
-        else:
+        elif lr == "Left":
             return LeftRight2xyzResponse(self.put_x1[-1],self.put_y[-1],self.put_depth[-1])
-
+        else:
+            print("agagag")
 
 if __name__ == '__main__':
     try:
