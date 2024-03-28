@@ -60,5 +60,5 @@ pip3 install requests pillow transformers
 
 # example
 ## Yolow Results
-[Yolow Results Image 1](https://github.com/KIT-Happy-Robot/happymimi_recognition/edit/master/unknown_object_recognition/image/dspt_tu_2.jpg)
-[Yolow Results Image 2](https://github.com/KIT-Happy-Robot/happymimi_recognition/edit/master/unknown_object_recognition/image/up_real_tu_1.jpg)
+![Yolow Results Image 1](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/dspt_tu_2.jpg)
+![Yolow Results Image 2](https://github.com/KIT-Happy-Robot/happymimi_recognition/blob/master/unknown_object_recognition/image/up_real_tu_1.jpg)
